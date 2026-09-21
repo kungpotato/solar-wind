@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Solar Wind — Roadmap Timeline</title>
+<meta name="description" content="Vertical timeline roadmap for Solar Wind from workshop prototype to Stage 0, Lean Phase-1, GA and the open solver network, with milestone details, KPIs and cash checkpoints.">
+<style>
+:root{ color-scheme:light;
+  --bg:#f6f7fb; --surface:#ffffff; --ink:#0f172a; --muted:#5b6472; --line:#e2e6ee;
+  --accent:#6d28d9; --ok:#0b6e4f; --warn:#b45309; --danger:#b91c1c; --chip:#eef2f7;
+  --s0:#f59e0b; --s0b:#fef3c7;   /* Stage 0 */
+  --s1:#0ea5e9; --s1b:#e0f2fe;   /* Lean */
+  --s2:#16a34a; --s2b:#dcfce7;   /* GA */
+  --s3:#7c3aed; --s3b:#ede9fe;   /* Phase 3 */
+  --done:#64748b; --doneb:#e2e8f0;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans Thai","Sarabun",sans-serif}
+body{padding:0 16px}
+.wrap{max-width:1040px;margin:0 auto;padding:40px 0 120px}
+header.hero{text-align:center;margin-bottom:24px}
+.kicker{color:var(--accent);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px}
+h1{font-size:clamp(30px,5vw,46px);line-height:1.1;margin:8px 0 10px;letter-spacing:-.01em}
+.lead{color:var(--muted);font-size:17px;max-width:720px;margin:0 auto}
+.legend{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:22px 0 8px}
+.legend span{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+a{color:var(--accent);text-decoration:none}
+
+/* stage headers */
+.stage{position:relative;margin:56px 0 12px;text-align:center}
+.stage span{display:inline-block;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 18px;font-weight:700;font-size:14px;letter-spacing:.03em;position:relative;z-index:2}
+.stage small{display:block;color:var(--muted);font-weight:500;font-size:12px}
+
+/* timeline */
+.tl{position:relative;padding:8px 0}
+.tl::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:3px;margin-left:-1.5px;background:linear-gradient(var(--lc),var(--lc-next,var(--lc)));border-radius:3px;opacity:.85}
+.node{position:relative;width:50%;padding:0 44px 40px 0;}
+.node:nth-child(even){margin-left:50%;padding:0 0 40px 44px}
+.node+.node{margin-top:-110px}
+.dot{position:absolute;top:22px;right:-11px;width:22px;height:22px;border-radius:50%;background:var(--surface);border:4px solid var(--c);box-shadow:0 0 0 4px var(--bg);z-index:2}
+.node:nth-child(even) .dot{right:auto;left:-11px}
+.dot.done{background:var(--c)}
+.dot.next{animation:pulse 1.8s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 4px var(--bg),0 0 0 4px color-mix(in srgb,var(--c) 45%,transparent)}100%{box-shadow:0 0 0 4px var(--bg),0 0 0 16px transparent}}
+.card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px 16px;box-shadow:0 1px 2px rgba(15,23,42,.04),0 8px 24px -12px rgba(15,23,42,.12);transition:transform .15s ease,box-shadow .15s ease}
+.card:hover{transform:translateY(-2px);box-shadow:0 2px 4px rgba(15,23,42,.05),0 16px 32px -12px rgba(15,23,42,.18)}
+.card::before{content:"";position:absolute;top:24px;right:-9px;width:16px;height:16px;background:var(--surface);border-right:1px solid var(--line);border-top:1px solid var(--line);transform:rotate(45deg)}
+.node:nth-child(even) .card::before{right:auto;left:-9px;transform:rotate(-135deg)}
+.card{border-top:4px solid var(--c)}
+.when{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--c);background:var(--cb);border-radius:999px;padding:3px 10px;margin-bottom:8px}
+.status{float:right;font-size:11px;font-weight:600;border-radius:999px;padding:3px 9px;border:1px solid var(--line);color:var(--muted);background:var(--chip)}
+.status.done{color:#fff;background:var(--done);border-color:var(--done)}
+.status.next{color:#fff;background:var(--c);border-color:var(--c)}
+.card h3{margin:2px 0 6px;font-size:18px;line-height:1.3}
+.card p.sum{margin:0 0 10px;color:var(--muted);font-size:14px}
+.card ul{margin:0;padding-left:18px;font-size:14px}
+.card li{margin:3px 0}
+.kpi{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.kpi span{font-size:12px;background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:3px 8px;color:var(--ink);font-variant-numeric:tabular-nums}
+.kpi span b{color:var(--muted);font-weight:500;margin-right:4px}
+.kpi span.gate{background:var(--cb);border-color:var(--c);color:var(--c);font-weight:600}
+.trigger{margin-top:10px;font-size:13px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px}
+.trigger b{color:var(--ink)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;background:var(--chip);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+.end{text-align:center;color:var(--muted);font-size:13px;margin-top:8px}
+footer{margin-top:56px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:16px;text-align:center}
+
+@media (max-width:760px){
+  .tl::before{left:14px;margin-left:0}
+  .node,.node:nth-child(even){width:100%;margin-left:0;padding:0 0 32px 44px}
+  .node+.node{margin-top:0}
+  .dot,.node:nth-child(even) .dot{right:auto;left:3px}
+  .card::before,.node:nth-child(even) .card::before{right:auto;left:-9px;transform:rotate(-135deg)}
+  .stage{text-align:left;padding-left:44px}
+  .legend{justify-content:flex-start}
+  header.hero{text-align:left}
+  .lead{margin:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker">Solar Wind · Roadmap · v3.0</div>
+  <h1>ทำเงินก่อน แล้วค่อยโต</h1>
+  <p class="lead">เส้นทางของ Non-Custodial DCA Agent สำหรับ solo dev: <strong>Phase A</strong> crypto DCA (USDC → ETH/cbBTC บน Base) ทำเงินจริงตั้งแต่เดือนที่ 2 โดยไม่ต้องมีบริษัท/ใบอนุญาต → ตั้งบริษัทเมื่อมีรายได้ → <strong>Phase B</strong> tokenized US stocks ผ่าน partner. ทุก node มี gate ที่วัดได้ ไม่ใช่วันที่ในปฏิทิน; เวลาโดยประมาณอิงจาก <a href="03-financial-projection.html">Financial Projection</a> base case</p>
+  <div class="legend">
+    <span><i style="background:var(--done)"></i>เสร็จแล้ว</span>
+    <span><i style="background:var(--s0)"></i>Stage 0 · Always Free · Phase A</span>
+    <span><i style="background:var(--s1)"></i>Lean Phase-1 · บริษัท</span>
+    <span><i style="background:var(--s2)"></i>GA · Scale</span>
+    <span><i style="background:var(--s3)"></i>Phase B / Phase 3</span>
+  </div>
+</header>
+
+<div class="stage"><span style="--c:var(--done)">จุดเริ่มต้น<small>Cross-Chain-Solver workshop</small></span></div>
+<div class="tl" style="--lc:var(--done);--lc-next:var(--s0)">
+
+  <div class="node" style="--c:var(--done);--cb:var(--doneb)">
+    <div class="dot done"></div>
+    <div class="card">
+      <span class="status done">DONE</span>
+      <span class="when">M0 · 2026-09</span>
+      <h3>Workshop prototype เสร็จ</h3>
+      <p class="sum">พิสูจน์แนวคิดครบ: ERC-7710 scoped delegation + EIP-712 intent + solver settlement บน Anvil (ใช้ mock token คู่ USDC — สลับเป็น ETH/cbBTC ได้ทันที)</p>
+      <ul>
+        <li><code>RwaDcaSettlement.sol</code> + 5 unit tests (รวม hacker-blocked)</li>
+        <li><code>agentic_brain.py</code>: perception → deterministic decision → guarded execution</li>
+        <li>demo scripts: cycle · hacker-blocked · all-features</li>
+        <li>เอกสาร 01/02 v3.0 + financial projection + stakeholder map</li>
+      </ul>
+      <div class="kpi"><span><b>cost</b>$0</span><span><b>chain</b>Anvil local</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="stage"><span style="--c:var(--s0);color:var(--s0)">Stage 0 · Phase A<small>OCI Always Free · solo dev · ไม่มีบริษัท · OCI ≈ $0/เดือน</small></span></div>
+<div class="tl" style="--lc:var(--s0);--lc-next:var(--s1)">
+
+  <div class="node" style="--c:var(--s0);--cb:var(--s0b)">
+    <div class="dot next"></div>
+    <div class="card">
+      <span class="status next">NEXT</span>
+      <span class="when">M1 · Build</span>
+      <h3>เปลี่ยน pair แล้วขึ้น infra ฟรี</h3>
+      <p class="sum">Contract/agent/solver มีอยู่แล้ว — งานคือ port เป็น 3 deployables, เปลี่ยน pair เป็น USDC → WETH/cbBTC และให้ CI เป็น reviewer</p>
+      <ul>
+        <li>Monorepo: <code>core</code> (Python) · <code>exec</code> (Python) · <code>signer</code> (Go) · web (Next.js static)</li>
+        <li>Contracts: <code>UniswapV3Adapter</code>/<code>AerodromeAdapter</code>, FeeModule 25 bps, <code>settleBatch</code>, per-user period offset, fuzz/invariant</li>
+        <li>Postgres job queue + outbox; rule builder + BYO-LLM (ไม่มี LLM ฝั่ง server)</li>
+        <li>Terraform Stage 0: vm-app (A1) + vm-signer (Micro) + Cloudflare Tunnel/Pages; pull-based deploy</li>
+        <li>Self-host guide + Docker image (posture "software, not service") + ToS/risk disclosure</li>
+        <li>e2e จาก <code>simulations/</code> บน Anvil ใน CI; deploy Base Sepolia</li>
+      </ul>
+      <div class="kpi"><span><b>users</b>0</span><span><b>OCI</b>$0–5/mo</span><span class="gate">gate: e2e เขียว + canary บน Sepolia</span></div>
+    </div>
+  </div>
+
+  <div class="node" style="--c:var(--s0);--cb:var(--s0b)">
+    <div class="dot"></div>
+    <div class="card">
+      <span class="when">M2 · Beta + รายได้แรก</span>
+      <h3>Base mainnet, fee เปิดตั้งแต่ swap แรก</h3>
+      <p class="sum">Legal consult เบา ๆ ($2k) แล้วเปิดให้คนรู้จัก 30 คน — protocol fee 25 bps หักบนเชนตั้งแต่วันแรกเพื่อครอบ gas</p>
+      <ul>
+        <li>MetaMask / WalletConnect (ADR-010) + Telegram bot (alerts, NL strategy, deep links)</li>
+        <li>Risk control ก่อน audit: cap 100 USDC/สัปดาห์/คน + TVL cap $50k + bounty + canary</li>
+        <li>ไม่มี default/recommendation — ผู้ใช้เลือก asset และตั้งกฎเอง (ADR-013)</li>
+        <li>สมัคร grant: Base Builder, Optimism RetroPGF; hackathon ด้วย demo</li>
+      </ul>
+      <div class="kpi"><span><b>users</b>30</span><span><b>one-off</b>legal $2k</span><span><b>rev</b>~$20/mo</span><span class="gate">gate: 4 สัปดาห์ settle ≥ 99% · fee ≥ 3× gas</span></div>
+    </div>
+  </div>
+
+  <div class="node" style="--c:var(--s0);--cb:var(--s0b)">
+    <div class="dot"></div>
+    <div class="card">
+      <span class="when">M4 · Audit</span>
+      <h3>Audit contest เมื่อ TVL ≥ $100k</h3>
+      <p class="sum">ก้อนเงินใหญ่ก้อนแรก ($12k) จ่ายจาก grant ถ้าได้ ไม่ได้ก็คง cap ไว้จนกว่าจะจ่ายไหว — operating break-even ตั้งแต่ M3</p>
+      <ul>
+        <li>Contest tier เล็ก / community audit; เปิด bounty (Immunefi)</li>
+        <li>ยก cap เป็น 250 USDC/สัปดาห์/คน หลัง audit ผ่าน</li>
+      </ul>
+      <div class="kpi"><span><b>users</b>200</span><span><b>one-off</b>$12k</span><span><b>rev</b>~$300/mo</span><span class="gate">gate T0: รายได้ ≥ $1k/mo หรือ TVL &gt; $250k</span></div>
+      <div class="trigger"><b>Trigger T0 → Lean + บริษัท:</b> รายได้ ≥ $1k/เดือน หรือ TVL &gt; $250k หรือ vm-app outage ทำให้พลาด &gt; 1 รอบ/เดือน</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="stage"><span style="--c:var(--s1);color:var(--s1)">Lean Phase-1<small>ตั้งบริษัท · OKE + managed PostgreSQL · ~$600/เดือน · เลี้ยงตัวเองได้</small></span></div>
+<div class="tl" style="--lc:var(--s1);--lc-next:var(--s2)">
+
+  <div class="node" style="--c:var(--s1);--cb:var(--s1b)">
+    <div class="dot"></div>
+    <div class="card">
+      <span class="when">M6 · บริษัท + OKE</span>
+      <h3>มีรายได้แล้วค่อยเป็นทางการ</h3>
+      <p class="sum">จดบริษัท ($1k) เมื่อรายได้ ≥ $1k/เดือน; ย้าย Compose → Kubernetes โดยไม่แตะ network</p>
+      <ul>
+        <li>np-a1 (Ampere ×3, autoscale 2–6) + np-signer (Confidential VM ×2)</li>
+        <li>Argo CD + Rollouts (canary, auto-rollback); ephemeral staging; cold DR drill ครั้งแรก</li>
+        <li>Postgres migrate ด้วย logical replication → managed</li>
+        <li>ToS/บัญชี/ภาษี ย้ายมาอยู่ใต้บริษัท; Treasury Safe 2-of-3</li>
+      </ul>
+      <div class="kpi"><span><b>users</b>~450</span><span><b>OCI</b>~$600/mo</span><span><b>net</b>≈ 0</span></div>
+    </div>
+  </div>
+
+  <div class="node" style="--c:var(--s1);--cb:var(--s1b)">
+    <div class="dot"></div>
+    <div class="card">
+      <span class="when">M9 · Mainstream onboarding</span>
+      <h3>Telegram Mini App + passkey smart account</h3>
+      <p class="sum">ไม่มี seed phrase/extension; setup gas sponsor ผ่าน paymaster; สัญญาไม่ต้องแก้ (EIP-1271)</p>
+      <ul>
+        <li>ERC-4337 account + passkey; approve+configure ใน 1 userOp</li>
+        <li>Key rotation อัตโนมัติรอบแรก (<code>ops-rotate-key.yml</code>) + re-delegate prompt</li>
+        <li>Restore drill รายเดือน; load test baseline 100k synthetic users</li>
+      </ul>
+      <div class="kpi"><span><b>users</b>1,300</span><span><b>AUM</b>~$0.7M</span><span><b>net</b>~$1.5k/mo</span></div>
+    </div>
+  </div>
+
+  <div class="node" style="--c:var(--s1);--cb:var(--s1b)">
+    <div class="dot"></div>
+    <div class="card">
+      <span class="when">M12 · Audit รอบ 2 (มีเงื่อนไข)</span>
+      <h3>จ่าย $30k เฉพาะเมื่อ TVL ≥ $1M</h3>
+      <p class="sum">ไม่ถึงก็เลื่อน — cap ต่อ user คือ risk control แทน (บทเรียนจาก Conservative case)</p>
+      <ul>
+        <li>Timelock 48h + Safe 3-of-5 คุม registries/fee</li>
+        <li>net ≥ $3k/เดือน ≈ M13 → จ่ายเงินเดือนตัวเองได้</li>
+        <li>เริ่มคุยกับ TSV/licensed broker เรื่อง Phase B (ยังไม่ commit)</li>
+      </ul>
+      <div class="kpi"><span><b>users</b>3,300</span><span><b>one-off</b>$30k (ถ้าถึง)</span><span><b>cash low</b>~−$35k</span><span class="gate">gate: TVL ≥ $1M + audit ผ่าน</span></div>
+      <div class="trigger"><b>Trigger T2 (PG HA):</b> active delegations &gt; 5,000 หรือ DB incident ทำ SLO พลาด</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="stage"><span style="--c:var(--s2);color:var(--s2)">GA · Phase A เต็มรูปแบบ<small>เปิดสาธารณะ · net บวกทุกเดือน · คืนทุน ~M17</small></span></div>
+<div class="tl" style="--lc:var(--s2);--lc-next:var(--s3)">
+
+  <div class="node" style="--c:var(--s2);--cb:var(--s2b)">
+    <div class="dot"></div>
+    <div class="card">
+      <span class="when">M13 · Public launch</span>
+      <h3>เปิดสาธารณะ + curated assets เพิ่ม</h3>
+      <p class="sum">ทุก guardrail ครบ: audit, bounty, canary, alarms-as-code, runbooks เป็น workflow</p>
+      <ul>
+        <li>Asset list เพิ่มตาม PairRegistry (crypto ที่ไม่ใช่หลักทรัพย์, liquidity ลึก) — ผู้ใช้เลือกเอง</li>
+        <li>PostgreSQL HA (T2) + read replica; partition ตาราง append-only</li>
+        <li>Marketing $200/mo + bug bounty reserve $300/mo</li>
+      </ul>
+      <div class="kpi"><span><b>users</b>4,500</span><span><b>net</b>~$5k/mo</span><span><b>OCI</b>~$1.4k/mo</span></div>
+    </div>
+  </div>
+
+  <div class="node" style="--c:var(--s2);--cb:var(--s2b)">
+    <div class="dot"></div>
+    <div class="card">
+      <span class="when">M17 · Cash break-even</span>
+      <h3>คืนทุนสะสม ~12,500 users</h3>
+      <p class="sum">เงินสดสะสมกลับเป็นบวกด้วย protocol fee อย่างเดียว (ไม่มี subscription, ไม่มี AUM/performance fee)</p>
+      <ul>
+        <li>RPC paid tier (10k+ users) — alarm 80% CU ทำงานก่อนหน้านี้</li>
+        <li>จ้างคนที่สองได้ (net &gt; $10k/mo ตั้งแต่ ~M15)</li>
+        <li>Pre-seed ด้วย metrics จริง (ถ้าต้องการเร่ง)</li>
+      </ul>
+      <div class="kpi"><span><b>users</b>12,500</span><span><b>AUM</b>~$10M</span><span><b>cum cash</b>&gt; 0</span></div>
+    </div>
+  </div>
+
+  <div class="node" style="--c:var(--s2);--cb:var(--s2b)">
+    <div class="dot"></div>
+    <div class="card">
+      <span class="when">M18–M24 · Scale</span>
+      <h3>รับลูกค้าเยอะโดยไม่เจ๊ง</h3>
+      <p class="sum">levers จาก 02 หัวข้อ 15c เปิดตามลำดับ ไม่ใช่ล่วงหน้า</p>
+      <ul>
+        <li>Wallet sharding (N hot wallets) เมื่อ pending-tx age โต; settleBatch ขนาดใหญ่ขึ้น</li>
+        <li>MPC signer (T8) เมื่อต้องการ multi-party control</li>
+        <li>Own RPC node (T4) เมื่อ provider bill &gt; $300/mo</li>
+        <li>Admission control/waitlist ผูกกับ TVL cap ที่ audit ครอบ</li>
+      </ul>
+      <div class="kpi"><span><b>users</b>15k → 33k</span><span><b>AUM</b>~$42M</span><span><b>net</b>$20k → $55k/mo</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="stage"><span style="--c:var(--s3);color:var(--s3)">Phase B · Phase 3<small>หลังมีบริษัท + รายได้ · tokenized stocks ผ่าน partner · open solver network</small></span></div>
+<div class="tl" style="--lc:var(--s3);--lc-next:var(--s3)">
+
+  <div class="node" style="--c:var(--s3);--cb:var(--s3b)">
+    <div class="dot"></div>
+    <div class="card">
+      <span class="when">Phase B · tokenized US stocks</span>
+      <h3>ออมหุ้นสหรัฐจริง ผ่าน partner ที่มีใบอนุญาต</h3>
+      <p class="sum">SEC Innovation Exemption (17 ก.ย. 2026 – 2031) เปิดให้ TSV เทรดหุ้น tokenize ผ่าน AMM — เราเป็น automation layer, partner (TSV/broker) เป็นผู้ execute หลักทรัพย์</p>
+      <ul>
+        <li>เปิด module ที่ออกแบบไว้แล้ว: <code>EligibilityProvider</code> (ADR-012), venue-hours/halt rules, <code>TSVPoolAdapter</code></li>
+        <li>Legal opinion เต็มรูปแบบ (US broker/adviser + ก.ล.ต. ไทย) หรือขอใบอนุญาตเอง</li>
+        <li>รายได้ = integration/referral/fee share กับ partner (ไม่ใช่ค่านายหน้าของเราเอง)</li>
+      </ul>
+      <div class="kpi"><span class="gate">gate: บริษัท + รายได้ Phase A + partner ที่มีใบอนุญาต + TSV เปิดจริง</span></div>
+    </div>
+  </div>
+
+  <div class="node" style="--c:var(--s3);--cb:var(--s3b)">
+    <div class="dot"></div>
+    <div class="card">
+      <span class="when">Phase 3 · Open solvers</span>
+      <h3>เปิดให้ solver ภายนอกแข่งขัน</h3>
+      <p class="sum">จาก permissioned solver ของเรา → auction สั้น 2–5 วินาที; surplus แบ่ง 80/20 ผ่าน FeeModule</p>
+      <ul>
+        <li>Intent feed (OCI Streaming, T5) + <code>SolverRegistry</code> bonds</li>
+        <li>ERC-7683 compatibility ให้ filler network ภายนอก fill batch ใหญ่ได้</li>
+        <li>Public dashboard: fees, surplus, gas, uptime</li>
+      </ul>
+      <div class="kpi"><span><b>model</b>surplus 80/20</span><span class="gate">gate: batch volume ใหญ่พอให้ filler ภายนอกมีกำไร</span></div>
+    </div>
+  </div>
+
+</div>
+<p class="end">◆ ทุก trigger (T0–T8) เป็น alarm ใน Terraform ที่เปิด GitHub issue อัตโนมัติ — การ scale จึงเป็น "ตอบ issue" ไม่ใช่ "จำได้ว่าเคยตัดอะไร"</p>
+
+<footer>Solar Wind · Roadmap Timeline v3.0 · 2026-09-21 · อ้างอิง <a href="01-system-architecture.html">01 System Architecture</a> หัวข้อ 17 · <a href="02-oci-cloud-architecture.html">02 OCI</a> หัวข้อ 15a/15c · <a href="03-financial-projection.html">03 Financial Projection</a></footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Solar Wind — Stakeholder Map</title>
+<meta name="description" content="High-level stakeholder diagram for Solar Wind v3.0: who gives what to whom (money, assets, data, oversight) across Phase A (crypto DCA) and Phase B (tokenized stocks via partner).">
+<style>
+:root{ color-scheme:light;
+  --bg:#f6f7fb; --surface:#ffffff; --ink:#0f172a; --muted:#5b6472; --line:#e2e6ee;
+  --accent:#6d28d9; --ok:#0b6e4f; --warn:#b45309; --danger:#b91c1c; --chip:#eef2f7;
+  --c-user:#dbeafe; --c-us:#dcfce7; --c-chain:#fde68a; --c-ext:#e5e7eb; --c-gov:#fecaca; --c-money:#ede9fe; --c-b:#f3e8ff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans Thai","Sarabun",sans-serif}
+body{padding:0 16px}
+.wrap{max-width:1100px;margin:0 auto;padding:36px 0 100px}
+header.hero{text-align:center;margin-bottom:20px}
+.kicker{color:var(--accent);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px}
+h1{font-size:clamp(28px,4.5vw,42px);line-height:1.15;margin:8px 0 10px}
+h2{font-size:22px;margin:44px 0 12px;padding-top:8px;border-top:1px solid var(--line)}
+.lead{color:var(--muted);font-size:17px;max-width:760px;margin:0 auto}
+a{color:var(--accent);text-decoration:none}
+figure{margin:20px 0;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;overflow-x:auto;box-shadow:0 8px 24px -16px rgba(15,23,42,.15)}
+figure svg{width:100%;height:auto;display:block;font-family:inherit}
+figcaption{color:var(--muted);font-size:13px;margin-top:10px}
+.legend{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:14px 0 4px}
+.legend span{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block;border:1px solid var(--line)}
+.legend b{display:inline-block;width:22px;height:0;border-top:3px solid}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{border-bottom:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:var(--chip);font-weight:600}
+tr:last-child td{border-bottom:none}
+.tag{display:inline-block;font-size:11px;font-weight:600;border-radius:999px;padding:2px 8px;border:1px solid var(--line);background:var(--chip);white-space:nowrap}
+.tag.a{color:var(--ok);border-color:var(--ok)}
+.tag.b{color:var(--accent);border-color:var(--accent)}
+.tag.hi{color:var(--danger);border-color:var(--danger)}
+.callout{border-left:4px solid var(--accent);background:var(--surface);border-radius:8px;padding:12px 16px;margin:16px 0}
+.callout.ok{border-left-color:var(--ok)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;background:var(--chip);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+footer{margin-top:56px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:16px;text-align:center}
+.box{stroke:var(--line);stroke-width:1.2;rx:12}
+.ttl{fill:var(--ink);font-size:14px;font-weight:700}
+.sub{fill:var(--muted);font-size:11px}
+.flow{fill:none;stroke-width:2;marker-end:url(#arr)}
+.money{stroke:#6d28d9}
+.asset{stroke:#b45309}
+.data{stroke:#0ea5e9;stroke-dasharray:5 4}
+.gov{stroke:#b91c1c;stroke-dasharray:2 4}
+.svc{stroke:#64748b}
+.fl{font-size:10.5px;fill:var(--muted)}
+.ring{fill:none;stroke:var(--line);stroke-dasharray:4 6}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker">Solar Wind · Stakeholder Map · v3.0</div>
+  <h1>ใครให้อะไรใคร</h1>
+  <p class="lead">ภาพระดับสูงของผู้มีส่วนได้ส่วนเสียรอบ Solar Wind — วงใน = สิ่งที่เราสร้างและคุม, วงกลาง = คู่ค้า/โครงสร้างพื้นฐานที่เราพึ่ง, วงนอก = ผู้กำกับดูแลและแหล่งทุน. เส้นบอกว่าอะไรไหลไปไหน: <b style="color:#6d28d9">เงิน</b> · <b style="color:#b45309">สินทรัพย์</b> · <b style="color:#0ea5e9">ข้อมูล</b> · <b style="color:#b91c1c">การกำกับ</b></p>
+  <div class="legend">
+    <span><i style="background:var(--c-user)"></i>ผู้ใช้</span>
+    <span><i style="background:var(--c-us)"></i>Solar Wind (เรา)</span>
+    <span><i style="background:var(--c-chain)"></i>On-chain</span>
+    <span><i style="background:var(--c-ext)"></i>Infra / partner</span>
+    <span><i style="background:var(--c-gov)"></i>กำกับดูแล</span>
+    <span><i style="background:var(--c-money)"></i>แหล่งทุน</span>
+    <span><i style="background:var(--c-b)"></i>Phase B เท่านั้น</span>
+    <span><b style="border-color:#6d28d9"></b>เงิน</span>
+    <span><b style="border-color:#b45309"></b>สินทรัพย์</span>
+    <span><b style="border-color:#0ea5e9;border-top-style:dashed"></b>ข้อมูล</span>
+    <span><b style="border-color:#b91c1c;border-top-style:dotted"></b>กำกับ</span>
+  </div>
+</header>
+
+<figure>
+<svg viewBox="0 0 1100 820" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Stakeholder map">
+<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#64748b"/></marker></defs>
+
+<!-- rings -->
+<ellipse cx="550" cy="410" rx="230" ry="150" class="ring"/>
+<ellipse cx="550" cy="410" rx="430" ry="290" class="ring"/>
+<text x="550" y="278" text-anchor="middle" class="sub">วงใน · เราสร้างและคุม</text>
+<text x="550" y="132" text-anchor="middle" class="sub">วงกลาง · คู่ค้าและโครงสร้างพื้นฐานที่เราพึ่ง</text>
+<text x="550" y="30" text-anchor="middle" class="sub">วงนอก · ผู้กำกับดูแล · แหล่งทุน · ตลาด</text>
+
+<!-- CENTER: Solar Wind -->
+<rect x="440" y="340" width="220" height="140" class="box" fill="var(--c-us)"/>
+<text x="550" y="366" text-anchor="middle" class="ttl">Solar Wind (solo dev)</text>
+<text x="550" y="386" text-anchor="middle" class="sub">core · exec · signer · web</text>
+<text x="550" y="402" text-anchor="middle" class="sub">hosted agent = ความสะดวก</text>
+<text x="550" y="418" text-anchor="middle" class="sub">open-source · self-host ได้</text>
+<text x="550" y="440" text-anchor="middle" class="sub">รายได้: protocol fee 25 bps</text>
+<text x="550" y="456" text-anchor="middle" class="sub">(อย่างเดียว — ไม่มี subscription)</text>
+
+<!-- Contracts (inner) -->
+<rect x="440" y="520" width="220" height="70" class="box" fill="var(--c-chain)"/>
+<text x="550" y="545" text-anchor="middle" class="ttl">Smart contracts (Base)</text>
+<text x="550" y="563" text-anchor="middle" class="sub">RwaDcaSettlement · FeeModule · Registries</text>
+<text x="550" y="579" text-anchor="middle" class="sub">non-upgradeable · enforcer · Treasury Safe</text>
+<path d="M550 480 L550 520" class="flow svc"/>
+<text x="560" y="504" class="fl">settle(intent)</text>
+
+<!-- USERS (left inner) -->
+<rect x="330" y="360" width="90" height="100" class="box" fill="var(--c-user)"/>
+<text x="375" y="384" text-anchor="middle" class="ttl">ผู้ใช้</text>
+<text x="375" y="402" text-anchor="middle" class="sub">ถือ key เอง</text>
+<text x="375" y="418" text-anchor="middle" class="sub">ตั้งกฎเอง</text>
+<text x="375" y="434" text-anchor="middle" class="sub">BYO-LLM</text>
+<text x="375" y="450" text-anchor="middle" class="sub">MetaMask/WC</text>
+<path d="M420 395 L440 395" class="flow data"/>
+<path d="M440 430 L420 430" class="flow data"/>
+<text x="424" y="390" class="fl" transform="rotate(-90 424 390)"></text>
+<path d="M375 460 L375 555 L440 555" class="flow money"/>
+<text x="380" y="520" class="fl">USDC + fee 25 bps</text>
+<path d="M440 575 L395 575 L395 470" class="flow asset" style="opacity:.0"/>
+
+<!-- DEX (inner right) -->
+<rect x="690" y="360" width="90" height="100" class="box" fill="var(--c-chain)"/>
+<text x="735" y="384" text-anchor="middle" class="ttl">DEX pools</text>
+<text x="735" y="402" text-anchor="middle" class="sub">Uniswap v3</text>
+<text x="735" y="418" text-anchor="middle" class="sub">Aerodrome</text>
+<text x="735" y="434" text-anchor="middle" class="sub">USDC ↔ ETH</text>
+<text x="735" y="450" text-anchor="middle" class="sub">/ cbBTC · 24/7</text>
+<path d="M660 555 L735 555 L735 460" class="flow money"/>
+<text x="665" y="570" class="fl">USDC (swap)</text>
+<path d="M710 460 L710 500 L640 500 L640 480" class="flow asset" style="opacity:0"/>
+<path d="M700 460 L700 610 L330 610 L330 470" class="flow asset"/>
+<text x="470" y="625" class="fl">ETH / cbBTC เข้ากระเป๋าผู้ใช้โดยตรง (tx เดียว)</text>
+
+<!-- MIDDLE RING -->
+<!-- Base chain / RPC -->
+<rect x="860" y="330" width="170" height="80" class="box" fill="var(--c-ext)"/>
+<text x="945" y="354" text-anchor="middle" class="ttl">Base L2 · RPC</text>
+<text x="945" y="372" text-anchor="middle" class="sub">Alchemy · public RPC</text>
+<text x="945" y="388" text-anchor="middle" class="sub">sequencer · gas (ETH)</text>
+<path d="M660 348 L860 348" class="flow svc"/>
+<text x="760" y="340" text-anchor="middle" class="fl">tx · getLogs · solver จ่าย gas (ETH)</text>
+
+<!-- Data feeds -->
+<rect x="860" y="440" width="170" height="80" class="box" fill="var(--c-ext)"/>
+<text x="945" y="464" text-anchor="middle" class="ttl">Data feeds (ฟรี)</text>
+<text x="945" y="482" text-anchor="middle" class="sub">Chainlink / Pyth · FRED</text>
+<text x="945" y="498" text-anchor="middle" class="sub">gas oracle</text>
+<path d="M860 500 L700 500 L660 470" class="flow data"/>
+
+<!-- Cloud -->
+<rect x="860" y="550" width="170" height="80" class="box" fill="var(--c-ext)"/>
+<text x="945" y="574" text-anchor="middle" class="ttl">OCI · Cloudflare</text>
+<text x="945" y="592" text-anchor="middle" class="sub">Always Free → Lean</text>
+<text x="945" y="608" text-anchor="middle" class="sub">Vault · WORM · Pages</text>
+<path d="M860 585 L660 470" class="flow svc"/>
+
+<!-- Wallet / Telegram -->
+<rect x="70" y="330" width="170" height="80" class="box" fill="var(--c-ext)"/>
+<text x="155" y="354" text-anchor="middle" class="ttl">Wallet · Telegram</text>
+<text x="155" y="372" text-anchor="middle" class="sub">MetaMask / WalletConnect</text>
+<text x="155" y="388" text-anchor="middle" class="sub">Bot API (alerts, NL) ฟรี</text>
+<path d="M240 370 L330 385" class="flow svc"/>
+
+<!-- LLM provider (user's own) -->
+<rect x="70" y="440" width="170" height="80" class="box" fill="var(--c-ext)"/>
+<text x="155" y="464" text-anchor="middle" class="ttl">LLM provider</text>
+<text x="155" y="482" text-anchor="middle" class="sub">key ของผู้ใช้เอง (BYO)</text>
+<text x="155" y="498" text-anchor="middle" class="sub">เราไม่จ่าย token</text>
+<path d="M240 480 L330 440" class="flow data"/>
+<path d="M330 455 L240 500" class="flow money"/>
+
+<!-- Auditors / bounty -->
+<rect x="70" y="550" width="170" height="80" class="box" fill="var(--c-ext)"/>
+<text x="155" y="574" text-anchor="middle" class="ttl">Auditors · Bounty</text>
+<text x="155" y="592" text-anchor="middle" class="sub">contest $12k → $30k</text>
+<text x="155" y="608" text-anchor="middle" class="sub">Immunefi · canary</text>
+<path d="M240 580 L440 560" class="flow data"/>
+<path d="M440 545 L240 565" class="flow money" style="opacity:0"/>
+
+<!-- OUTER RING -->
+<!-- Regulators -->
+<rect x="60" y="60" width="200" height="90" class="box" fill="var(--c-gov)"/>
+<text x="160" y="84" text-anchor="middle" class="ttl">ก.ล.ต. ไทย</text>
+<text x="160" y="102" text-anchor="middle" class="sub">digital-asset business law</text>
+<text x="160" y="118" text-anchor="middle" class="sub">ประเด็น: hosted agent = advisor?</text>
+<text x="160" y="134" text-anchor="middle" class="sub">→ posture "software", legal consult</text>
+<path d="M200 150 L470 340" class="flow gov"/>
+
+<rect x="840" y="60" width="200" height="90" class="box" fill="var(--c-gov)"/>
+<text x="940" y="84" text-anchor="middle" class="ttl">US SEC</text>
+<text x="940" y="102" text-anchor="middle" class="sub">Phase A: ไม่แตะหลักทรัพย์</text>
+<text x="940" y="118" text-anchor="middle" class="sub">Phase B: Innovation Exemption</text>
+<text x="940" y="134" text-anchor="middle" class="sub">(TSV/LP ยกเว้น — เราไม่)</text>
+<path d="M900 150 L630 340" class="flow gov"/>
+
+<!-- Funding -->
+<rect x="330" y="50" width="200" height="80" class="box" fill="var(--c-money)"/>
+<text x="430" y="74" text-anchor="middle" class="ttl">Grants · Hackathons</text>
+<text x="430" y="92" text-anchor="middle" class="sub">Base Builder · Optimism RetroPGF</text>
+<text x="430" y="108" text-anchor="middle" class="sub">$10–20k → จ่ายค่า audit</text>
+<path d="M450 130 L520 340" class="flow money"/>
+
+<rect x="570" y="50" width="200" height="80" class="box" fill="var(--c-money)"/>
+<text x="670" y="74" text-anchor="middle" class="ttl">Treasury Safe</text>
+<text x="670" y="92" text-anchor="middle" class="sub">fee สะสม · gas float refill</text>
+<text x="670" y="108" text-anchor="middle" class="sub">Allowance Module → solver wallet</text>
+<path d="M650 130 L590 340" class="flow money"/>
+<path d="M660 585 L810 585 L810 180 L740 180 L740 130" class="flow money"/>
+<text x="815" y="250" class="fl">protocol fee → Treasury</text>
+
+<!-- Competitors -->
+<rect x="60" y="690" width="200" height="80" class="box" fill="var(--c-ext)"/>
+<text x="160" y="714" text-anchor="middle" class="ttl">คู่แข่ง</text>
+<text x="160" y="732" text-anchor="middle" class="sub">custodial DCA bots · CEX auto-buy</text>
+<text x="160" y="748" text-anchor="middle" class="sub">เราชนะด้วย: non-custodial · gasless · กฎของผู้ใช้</text>
+
+<!-- Phase B partners -->
+<rect x="330" y="690" width="440" height="100" class="box" fill="var(--c-b)"/>
+<text x="550" y="714" text-anchor="middle" class="ttl">Phase B เท่านั้น · tokenized US stocks</text>
+<text x="550" y="734" text-anchor="middle" class="sub">TSV (venue, permissioned AMM) · licensed broker/partner (ผู้ execute หลักทรัพย์)</text>
+<text x="550" y="750" text-anchor="middle" class="sub">tokenizer/transfer agent · liquidity providers (Covered Firms) · issuers (ค้านได้)</text>
+<text x="550" y="770" text-anchor="middle" class="sub">เรา = automation layer; รายได้ = integration/referral/fee share; เปิดเมื่อมีบริษัท + รายได้ Phase A</text>
+<path d="M550 690 L550 590" class="flow svc" style="stroke-dasharray:6 5"/>
+
+<!-- Future external solvers -->
+<rect x="840" y="690" width="200" height="80" class="box" fill="var(--c-ext)"/>
+<text x="940" y="714" text-anchor="middle" class="ttl">Solver ภายนอก (Phase 3)</text>
+<text x="940" y="732" text-anchor="middle" class="sub">auction · SolverRegistry bond</text>
+<text x="940" y="748" text-anchor="middle" class="sub">surplus 80/20</text>
+<path d="M840 720 L660 580" class="flow svc" style="stroke-dasharray:6 5"/>
+</svg>
+<figcaption>Phase A ทั้งหมดอยู่ในวงในและวงกลาง: ผู้ใช้ → สัญญา → DEX → กลับเข้ากระเป๋าผู้ใช้ใน tx เดียว โดยเราแตะแค่ fee บนเชนและจ่าย gas. วงนอกคือสิ่งที่เราต้อง "ไม่ผิด" (regulators) และ "ขอ" (grants). กล่องม่วงอ่อนคือ stakeholder ที่ปรากฏเฉพาะ Phase B</figcaption>
+</figure>
+
+<h2>ตาราง stakeholder: ให้อะไร · ได้อะไร · เราพึ่งแค่ไหน</h2>
+<div class="tablewrap"><table>
+<tr><th style="width:17%">Stakeholder</th><th>ให้เรา / ให้ผู้ใช้</th><th>ได้อะไรจากระบบ</th><th style="width:13%">Phase</th><th style="width:13%">Dependency / risk</th></tr>
+<tr><td><strong>ผู้ใช้ (savers)</strong></td><td>USDC ตามงบที่ตั้ง + protocol fee; กฎการออม; LLM key ของตัวเอง (ถ้าใช้ NL)</td><td>ETH/cbBTC เข้ากระเป๋าตัวเองอัตโนมัติ, ไม่ต้องเฝ้าจอ, ไม่เสีย gas, ยกเลิกได้ทุกเมื่อ</td><td><span class="tag a">A</span> <span class="tag b">B</span></td><td>acquisition คือความเสี่ยงหลัก</td></tr>
+<tr><td><strong>Solar Wind (เรา)</strong></td><td>software: contracts, hosted agent, solver (gas), UI, bot, self-host image</td><td>protocol fee 25 bps อย่างเดียว; ไม่ถือทรัพย์สิน ไม่แนะนำ</td><td><span class="tag a">A</span></td><td>solo dev = SPOF ของคน; automation แทนทีม</td></tr>
+<tr><td><strong>Smart contracts / Treasury Safe</strong></td><td>บังคับ caveats ทุกข้อ; เก็บ fee; refill gas ผ่าน Allowance Module</td><td>—</td><td><span class="tag a">A</span></td><td>exploit → จำกัดที่ 1 period budget/user; audit + cap</td></tr>
+<tr><td><strong>DEX pools (Uniswap v3 / Aerodrome)</strong></td><td>liquidity USDC↔ETH/cbBTC 24/7, permissionless</td><td>swap volume + LP fee ของพวกเขา</td><td><span class="tag a">A</span></td><td>ต่ำ — pool ลึกหลายสิบล้าน</td></tr>
+<tr><td><strong>Base L2 · RPC providers</strong></td><td>block space, sequencer, RPC (free tier → paid)</td><td>gas ที่ solver จ่าย, compute units</td><td><span class="tag a">A</span></td><td>RPC quota → T4; gas spike → gas rules</td></tr>
+<tr><td><strong>Data feeds</strong></td><td>ราคา (Chainlink/Pyth), macro (FRED), gas</td><td>—</td><td><span class="tag a">A</span></td><td>stale → SKIP (ไม่ default buy)</td></tr>
+<tr><td><strong>OCI · Cloudflare</strong></td><td>compute ฟรี (Always Free), Vault, WORM, edge/Pages/Tunnel</td><td>$0 → ~$600/เดือนเมื่อ Lean</td><td><span class="tag a">A</span></td><td>A1 capacity; ย้ายได้ (Terraform)</td></tr>
+<tr><td><strong>Wallet · Telegram</strong></td><td>ช่องเซ็น (MetaMask/WC), ช่องแจ้งเตือน/สั่งงาน (Bot API ฟรี)</td><td>—</td><td><span class="tag a">A</span></td><td>Bot API rate limit → outbox</td></tr>
+<tr><td><strong>LLM provider (ของผู้ใช้)</strong></td><td>NL → rules, explain — ด้วย key ของผู้ใช้</td><td>token revenue จากผู้ใช้โดยตรง</td><td><span class="tag a">A</span></td><td>เราไม่พึ่ง — product ทำงานได้โดยไม่มี LLM</td></tr>
+<tr><td><strong>Auditors · bounty hunters</strong></td><td>ความมั่นใจในสัญญา</td><td>$12k → $30k · bounty payouts</td><td><span class="tag a">A</span></td><td>ก้อนเงินใหญ่สุด; ผูกกับ TVL</td></tr>
+<tr><td><strong>ก.ล.ต. ไทย</strong></td><td>กรอบ digital-asset business (advisor/fund manager)</td><td>—</td><td><span class="tag a">A</span> <span class="tag hi">สูง</span></td><td>hosted agent ถูกตีความเป็น advisor → เหลือ self-host สำหรับผู้ใช้ไทย; legal consult M2</td></tr>
+<tr><td><strong>US SEC</strong></td><td>Phase A: ไม่เกี่ยว (ไม่ใช่หลักทรัพย์); Phase B: Innovation Exemption สำหรับ TSV/LP</td><td>—</td><td><span class="tag b">B</span> <span class="tag hi">สูง</span></td><td>Phase B ต้องมี partner ที่มีใบอนุญาต</td></tr>
+<tr><td><strong>Grants · hackathons</strong></td><td>$10–20k (Base Builder, RetroPGF)</td><td>public good บน Base, open-source</td><td><span class="tag a">A</span></td><td>ไม่แน่นอน — แผนต้องอยู่ได้โดยไม่มี</td></tr>
+<tr><td><strong>คู่แข่ง</strong></td><td>custodial DCA bots, CEX auto-buy</td><td>—</td><td><span class="tag a">A</span></td><td>ต้องชนะด้วย non-custodial + gasless + กฎของผู้ใช้</td></tr>
+<tr><td><strong>TSV · licensed partner · tokenizer · LPs · issuers</strong></td><td>venue สำหรับหุ้น tokenize, permissioning, execution ที่มีใบอนุญาต</td><td>order flow retail DCA; fee share</td><td><span class="tag b">B</span></td><td>ยังไม่มี venue เปิด ณ วันที่เขียน; issuer ค้านได้</td></tr>
+<tr><td><strong>Solver ภายนอก</strong></td><td>execution แข่งขัน, surplus ให้ผู้ใช้</td><td>surplus share 20% + bond</td><td>Phase 3</td><td>order $50 กำไรน้อยจนกว่าจะ batch ใหญ่</td></tr>
+</table></div>
+
+<div class="callout ok"><strong>อ่านภาพนี้แบบ solo dev:</strong> ใน Phase A มี stakeholder ที่ "ต้องคุยด้วย" จริง ๆ แค่ 3 กลุ่ม — ผู้ใช้ (หาให้ได้), ที่ปรึกษากฎหมาย (คุยครั้งเดียว $2k), และ auditor (เมื่อ TVL ถึง) — ที่เหลือเป็น API/สัญญาที่ไม่ต้องเจรจา. Phase B เพิ่มคู่ค้าที่ต้องเจรจาอีก 3–4 ราย ซึ่งเป็นเหตุผลว่าทำไมมันมาทีหลังรายได้และบริษัท</div>
+
+<footer>Solar Wind · Stakeholder Map v3.0 · 2026-09-21 · อ้างอิง <a href="01-system-architecture.html">01</a> หัวข้อ 1.1/1.2/14 · <a href="03-financial-projection.html">03</a> · <a href="04-roadmap-timeline.html">04</a></footer>
+</div>
+</body>
+</html>

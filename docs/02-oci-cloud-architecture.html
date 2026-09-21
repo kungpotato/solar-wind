@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Solar Wind — OCI Cloud Architecture</title>
+<meta name="description" content="Cloud architecture on Oracle Cloud Infrastructure (OCI) for Solar Wind, a non-custodial RWA DCA agent platform: network, OKE, data, signer isolation, security, CI/CD, DR and cost.">
+<style>
+:root{ color-scheme:light;
+  --bg:#f7f8fa; --surface:#ffffff; --ink:#111827; --muted:#5b6472; --line:#d9dee7;
+  --accent:#c2410c; --accent-2:#1d4ed8; --warn:#b45309; --danger:#b91c1c;
+  --chip:#eef2f7; --code:#f1f5f9;
+  --c-pub:#dbeafe; --c-app:#dcfce7; --c-data:#ede9fe; --c-sec:#fecaca; --c-ext:#e5e7eb; --c-oci:#ffedd5; --c-mgmt:#fef9c3;
+}
+
+
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans Thai","Sarabun",sans-serif}
+body{padding:0 16px}
+.wrap{max-width:1080px;margin:0 auto;padding:32px 0 96px}
+header.hero{border-bottom:1px solid var(--line);padding-bottom:24px;margin-bottom:32px}
+.kicker{color:var(--accent);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:12px}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.15;margin:8px 0 12px}
+h2{font-size:24px;margin:48px 0 12px;padding-top:8px;border-top:1px solid var(--line)}
+h3{font-size:18px;margin:28px 0 8px}
+p{margin:8px 0}
+.lead{font-size:18px;color:var(--muted)}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chip{background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:2px 12px;font-size:13px}
+nav.toc{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:24px 0}
+nav.toc ol{margin:0;padding-left:20px;columns:2;column-gap:32px}
+@media (max-width:640px){nav.toc ol{columns:1}}
+nav.toc a, a{color:var(--accent-2);text-decoration:none}
+figure{margin:20px 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;overflow-x:auto}
+figure svg{width:100%;height:auto;display:block;font-family:inherit}
+figcaption{color:var(--muted);font-size:13px;margin-top:10px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14.5px;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th,td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--chip);font-weight:600}
+tr:last-child td{border-bottom:none}
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.5px}
+code{background:var(--code);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;line-height:1.5}
+pre code{background:none;border:none;padding:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:14px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card h4{margin:0 0 6px;font-size:15px}
+.card p{margin:0;color:var(--muted);font-size:14px}
+.callout{border-left:4px solid var(--accent);background:var(--surface);border-radius:8px;padding:12px 16px;margin:16px 0}
+.callout.warn{border-left-color:var(--warn)}
+.callout.danger{border-left-color:var(--danger)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:8px}
+.legend span i{display:inline-block;width:12px;height:12px;border:1px solid var(--line);border-radius:3px;vertical-align:-1px;margin-right:5px}
+ul,ol{padding-left:22px}
+li{margin:4px 0}
+.small{font-size:13px;color:var(--muted)}
+footer{margin-top:64px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+.box{stroke:var(--line);stroke-width:1.2;rx:8}
+.lbl{fill:var(--ink);font-size:13px}
+.sub{fill:var(--muted);font-size:11px}
+.ttl{fill:var(--ink);font-size:14px;font-weight:600}
+.edge{stroke:var(--muted);stroke-width:1.4;fill:none;marker-end:url(#arr)}
+.edge.strong{stroke:var(--accent);stroke-width:1.8}
+.edge.danger{stroke:var(--danger);stroke-dasharray:5 4}
+.boundary{fill:none;stroke:var(--muted);stroke-dasharray:6 5;stroke-width:1.2;rx:12}
+.btitle{fill:var(--muted);font-size:12px;font-weight:600;letter-spacing:.04em}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker">Solar Wind · Cloud Architecture · Oracle Cloud Infrastructure · v3.0</div>
+  <h1>OCI Cloud Architecture<br><span style="font-weight:500;color:var(--muted)">Deploying the Non-Custodial RWA DCA Agent on Oracle Cloud</span></h1>
+  <p class="lead">การออกแบบโครงสร้างพื้นฐานบน Oracle Cloud Infrastructure (OCI) สำหรับระบบใน <a href="01-system-architecture.html">01 · System Architecture</a> ครอบคลุม network topology, OKE, managed data services, การแยก signer, IAM/security controls, CI/CD (GitOps), multi-region DR, cost model และ runbooks</p>
+  <div class="meta">
+    <span class="chip">Status: v3.0 — Phase A on Base · OCI ≈ $0 until revenue</span>
+    <span class="chip">Date: 2026-09-21</span>
+    <span class="chip">Primary region: ap-singapore-1</span>
+    <span class="chip">DR region: ap-tokyo-1</span>
+      </div>
+</header>
+
+<nav class="toc">
+<ol>
+  <li><a href="#overview">ภาพรวมและเหตุผลการเลือก OCI</a></li>
+  <li><a href="#regions">Regions, Tenancy &amp; Compartments</a></li>
+  <li><a href="#stage0">2a. Stage 0 — Solo-dev Deployment (Always Free)</a></li>
+  <li><a href="#network">Network Topology (VCN)</a></li>
+  <li><a href="#compute">Compute: OKE Cluster Design</a></li>
+  <li><a href="#data">Managed Data Services</a></li>
+  <li><a href="#signer">Signer Isolation &amp; Key Management</a></li>
+  <li><a href="#iam">IAM &amp; Security Controls</a></li>
+  <li><a href="#blockchain">Blockchain Connectivity (RPC, Nodes, Mempool)</a></li>
+  <li><a href="#observability">Observability Stack</a></li>
+  <li><a href="#cicd">CI/CD &amp; GitOps</a></li>
+  <li><a href="#envs">Environments</a></li>
+  <li><a href="#dr">High Availability &amp; Disaster Recovery</a></li>
+  <li><a href="#cost">Cost Model (indicative)</a></li>
+  <li><a href="#terraform">Terraform / IaC Layout</a></li>
+  <li><a href="#runbooks">Runbooks</a></li>
+  <li><a href="#triggers">Scale-up Triggers T0–T8</a></li>
+  <li><a href="#not-automated">สิ่งที่จงใจไม่ automate</a></li>
+  <li><a href="#capacity">Capacity &amp; Scaling</a></li>
+  <li><a href="#checklist">Production Readiness Checklist</a></li>
+</ol>
+</nav>
+
+<!-- 1 -->
+<h2 id="overview">1. ภาพรวมและเหตุผลการเลือก OCI</h2>
+<div class="grid">
+  <div class="card"><h4>ทำไม OCI</h4><p>• <strong>Always Free</strong>: Ampere A1 4 OCPU/24 GB + 2 Micro VMs + 200 GB storage + LB — พอสำหรับ Stage 0 ทั้งระบบที่ $0<br>• egress 10 TB/เดือนฟรี เหมาะกับ RPC/indexer traffic<br>• OKE Enhanced + Workload Identity, managed PostgreSQL, Vault (HSM) สำหรับ Lean Phase-1<br>• Cloud Guard / Security Zones / Audit ช่วยผ่าน compliance baseline เร็ว</p></div>
+  <div class="card"><h4>Design drivers</h4><p>• Signer แยก network เสมอ (VM แยกใน Stage 0, node pool + subnet แยกใน Lean)<br>• Postgres เป็น stateful service เดียว (queue · outbox · locks) — ไม่มี Redis/Kafka/Temporal จนถึง trigger<br>• Everything-as-code (Terraform + GitHub Actions; Argo CD ใน Lean)<br>• Cold DR ที่ scripted: RPO ≤ 15 นาที, RTO 2–4 ชม. (เชนเป็น system of record)</p></div>
+  <div class="card"><h4>สิ่งที่ <em>ไม่</em> อยู่บน OCI</h4><p>• Edge: Cloudflare Free (DNS, WAF, Pages, Tunnel) — ADR-008<br>• Blockchain networks, RPC providers (free/growth tier; own node ที่ T4)<br>• LLM ของผู้ใช้เอง (BYO key, client-side), data feeds ฟรี, Telegram Bot API<br>• User keys (อยู่ใน wallet ผู้ใช้เสมอ)</p></div>
+</div>
+
+<!-- 2 -->
+<h2 id="regions">2. Regions, Tenancy &amp; Compartments</h2>
+<table>
+<tr><th>Item</th><th>Choice</th><th>หมายเหตุ</th></tr>
+<tr><td>Primary region</td><td><code>ap-singapore-1</code></td><td>Latency ต่ำสุดสำหรับผู้ใช้ไทย/SEA; มี Always Free A1/Micro, PostgreSQL, OKE, Vault ครบ</td></tr>
+<tr><td>DR region</td><td><code>ap-tokyo-1</code></td><td>ต่างภูมิศาสตร์จาก Singapore; ทางเลือก: <code>ap-singapore-2</code> (Singapore West) ถ้าต้องการ latency ใกล้เคียง หรือ <code>ap-osaka-1</code></td></tr>
+<tr><td>Availability</td><td>1 AD × 3 Fault Domains (ทั้งสอง region)</td><td>Region เหล่านี้เป็น single-AD → HA ทำผ่าน Fault Domains + managed service multi-node; DR ทำข้าม region</td></tr>
+<tr><td>Identity</td><td>OCI IAM Identity Domain (Default) + SSO (Okta/Google) + MFA บังคับ</td><td>Break-glass local admin 2 บัญชี เก็บใน sealed envelope</td></tr>
+</table>
+<pre><code>Tenancy: solar-wind
+├── cmp-shared            # OCIR, Vault (master keys), DNS zones, Logging Analytics, Object Storage (artifacts)
+├── cmp-security          # Cloud Guard target, Security Zone, Bastion, audit archive (WORM)
+├── cmp-network-prod      # VCN, gateways, NSGs (prod)   — network admins only
+├── cmp-prod              # Stage 0: 2 Always-Free VMs + buckets · Lean: OKE, PostgreSQL, LB
+│   └── cmp-prod-signer   # Signer node pool, signer secrets, signer KMS keys — separate policies
+├── cmp-staging           # ephemeral (created/destroyed by ops-staging.yml), Base Sepolia
+└── cmp-dev               # sandbox for engineers (budget-capped)</code></pre>
+
+<!-- 2a -->
+<h2 id="stage0">2a. Stage 0 — Solo-dev Deployment (OCI Always Free)</h2>
+<p>Target แรกของระบบ (ออกแบบจาก architecture review 2026-09-21): รัน 3 deployables (<code>core</code>/<code>exec</code>/<code>signer</code>) บน VM ฟรี 2 ตัวใน VCN เดียวกับที่ Lean Phase-1 จะใช้ต่อ — subnet และ NSG ออกแบบครั้งเดียว, ย้ายขึ้น OKE ที่ T0 โดยไม่แตะ network</p>
+<table>
+<tr><th style="width:20%">Item</th><th>Design (Stage 0)</th></tr>
+<tr><td>vm-app</td><td><code>VM.Standard.A1.Flex</code> 4 OCPU / 24 GB (Always Free) ใน <code>sn-private</code> (10.10.16.0/20 — subnet เดียวกับ OKE workers ในอนาคต); ไม่มี public IP; egress ผ่าน NAT Gateway (no hourly charge) โดย host firewall (nftables จาก cloud-init) จำกัด destination allowlist เดียวกับ egress-proxy ของ Lean</td></tr>
+<tr><td>vm-signer</td><td><code>VM.Standard.E2.1.Micro</code> (Always Free) ใน <code>sn-signer</code> (10.10.40.0/26) — route table มีเฉพาะ Service Gateway (Vault, Logging, Monitoring); NSG รับ 8443 จาก NSG ของ vm-app เท่านั้น; Go signer เป็น systemd service, key ดึงจาก Vault ผ่าน instance principal → RAM (mlock); ไม่มี confidential compute ที่ tier นี้ (ยอมรับ: blast radius ยังถูกจำกัดโดยสัญญา). Micro ตัวที่ 2 = spare/staging signer</td></tr>
+<tr><td>Runtime</td><td>Docker Compose บน vm-app: <code>core</code>, <code>exec</code>, <code>postgres:16</code> (block volume 100 GB encrypted), <code>cloudflared</code> (Tunnel → Cloudflare Free; ไม่ต้องมี LB/WAF/public IP), <code>otel-collector</code> → OCI Logging. Web = Next.js static export บน Cloudflare Pages</td></tr>
+<tr><td>Deploy (zero-touch)</td><td>GitHub Actions build (linux/arm64 สำหรับ A1, amd64 สำหรับ signer) → cosign sign → OCIR. บน VM: systemd timer ทุก 5 นาที → <code>docker compose pull</code> ถ้า digest เปลี่ยน → <code>cosign verify</code> → <code>up -d</code>; rollback = pin digest ก่อนหน้าใน compose (git revert). Signer binary ดึงจาก Object Storage + cosign verify แบบเดียวกัน. ไม่มี inbound SSH — admin ผ่าน OCI Bastion session เมื่อจำเป็น</td></tr>
+<tr><td>Data protection</td><td>Postgres: WAL archive ทุกชั่วโมง + base backup รายวันไป bucket <code>sw-backups</code> (wal-g) → PITR ได้; bucket replicate ไป ap-tokyo-1; audit rows export รายวันไป <code>sw-audit-worm</code> (retention lock). Restore drill รายเดือนโดย <code>ops-restore-drill.yml</code> (restore ลง container ชั่วคราวบน runner แล้ว reconcile กับ chain)</td></tr>
+<tr><td>Secrets &amp; IAM</td><td>OCI Vault (default vault, HSM) เก็บ: signer key blob, RPC keys, Telegram token, และ KEK <code>sw-userkeys-kek</code> สำหรับ envelope-encrypt LLM key ของผู้ใช้ที่เลือกฝาก (Tier B, 01 หัวข้อ 8.1) — ciphertext อยู่ใน Postgres ไม่ใช่ใน Vault, Cloudflare tunnel token. Dynamic groups: <code>dg-vm-app</code> (read secrets ยกเว้น <code>signer-*</code>), <code>dg-vm-signer</code> (decrypt ด้วย KEK + read <code>signer-*</code> เท่านั้น). ไม่มี OCI API key บนเครื่องใด</td></tr>
+<tr><td>Observability</td><td>OCI Monitoring custom metrics จาก <code>core</code>/<code>exec</code> (<code>/metrics</code> → otel → OCI); alarms-as-code (หัวข้อ 9) → Notifications → Telegram ops channel (webhook ผ่าน OCI Functions ฟรี tier) ; canary user 1 USDC/สัปดาห์ เป็น end-to-end probe</td></tr>
+<tr><td>Cost</td><td>OCI ≈ $0–5 (OCIR storage, Vault key versions); external: LLM $0 (BYO), gas ~$5–40, ที่เหลือ free tier — รวม ~$10–65/เดือน</td></tr>
+<tr><td>Terraform</td><td><code>infra/terraform/oci/stage0/</code>: <code>network.tf</code> · <code>compute.tf</code> (2 VMs + cloud-init) · <code>storage.tf</code> (buckets, WORM rule, Vault secrets placeholders) · <code>alarms.tf</code>; + <code>infra/terraform/cloudflare/</code> (zone, Pages, Tunnel, WAF rules). State ใน Object Storage bucket <code>sw-tfstate</code></td></tr>
+<tr><td>Known limits (มี alarm)</td><td>vm-app = SPOF (outage = ไม่ซื้อในรอบนั้น; canary alarm); A1 capacity อาจเต็มตอนสร้าง (retry/AD fallback ใน Terraform); Micro VM 1 GB RAM พอสำหรับ Go signer เท่านั้น</td></tr>
+</table>
+<div class="callout ok"><strong>Exit criteria → Lean Phase-1 (T0):</strong> ผู้ใช้จ่ายเงิน &gt; 200 หรือ TVL ภายใต้ delegation &gt; $250k หรือ partner/audit ต้องการ HA/confidential compute หรือ vm-app outage ทำให้พลาด &gt; 1 รอบ/เดือน — ย้ายโดยรัน <code>infra/terraform/oci/lean/</code> ใน VCN เดิม, Helm charts ที่เตรียมไว้, และ migrate Postgres ด้วย logical replication → managed</div>
+
+<!-- 3 -->
+<h2 id="network">3. Network Topology (VCN) — Lean Phase-1</h2>
+<p class="small">Stage 0 ใช้ VCN/subnets/NSGs ชุดเดียวกันนี้ (vm-app ใน sn-oke-workers, vm-signer ใน sn-signer) — ต่างกันแค่ compute ที่วางลงไป</p>
+<figure>
+<svg viewBox="0 0 1100 820" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OCI VCN topology">
+<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+<!-- region -->
+<rect x="20" y="20" width="1060" height="780" class="boundary"/><text x="32" y="40" class="btitle">OCI REGION ap-singapore-1 · Tenancy solar-wind · cmp-prod</text>
+<!-- VCN -->
+<rect x="40" y="60" width="800" height="720" class="boundary" style="stroke:var(--accent)"/><text x="52" y="80" class="btitle" style="fill:var(--accent)">VCN vcn-prod 10.10.0.0/16</text>
+
+<!-- Internet -->
+<rect x="870" y="70" width="190" height="60" class="box" fill="var(--c-ext)"/>
+<text x="965" y="95" text-anchor="middle" class="ttl">Internet → Cloudflare Free</text>
+<text x="965" y="113" text-anchor="middle" class="sub">DNS · WAF · DDoS · Pages (web)</text>
+
+<!-- Public subnet -->
+<rect x="60" y="100" width="760" height="120" class="boundary" style="stroke:var(--accent-2)"/><text x="72" y="120" class="btitle" style="fill:var(--accent-2)">PUBLIC SUBNET 10.10.0.0/24 (sn-public)</text>
+<rect x="80" y="135" width="170" height="60" class="box" fill="var(--c-pub)"/>
+<text x="165" y="158" text-anchor="middle" class="ttl">Flexible LB 10 Mbps</text>
+<text x="165" y="176" text-anchor="middle" class="sub">TLS · accepts Cloudflare IPs only</text>
+<rect x="270" y="135" width="150" height="60" class="box" fill="var(--c-pub)"/>
+<text x="345" y="158" text-anchor="middle" class="ttl">Internet Gateway</text>
+<text x="345" y="176" text-anchor="middle" class="sub">ingress only via LB</text>
+<rect x="440" y="135" width="150" height="60" class="box" fill="var(--c-pub)"/>
+<text x="515" y="158" text-anchor="middle" class="ttl">NAT Gateway</text>
+<text x="515" y="176" text-anchor="middle" class="sub">egress: proxy pods only</text>
+<rect x="610" y="135" width="190" height="60" class="box" fill="var(--c-pub)"/>
+<text x="705" y="158" text-anchor="middle" class="ttl">OCI Bastion</text>
+<text x="705" y="176" text-anchor="middle" class="sub">session-based · MFA · no public VMs</text>
+<path d="M870 100 L420 100 L420 135" class="edge strong"/>
+<text x="640" y="94" text-anchor="middle" class="sub">HTTPS 443 · Cloudflare → LB</text>
+
+<!-- Private app subnet -->
+<rect x="60" y="240" width="500" height="300" class="boundary" style="stroke:var(--accent)"/><text x="72" y="260" class="btitle">PRIVATE SUBNET 10.10.16.0/20 (sn-oke-workers)</text>
+<rect x="80" y="275" width="460" height="245" class="box" fill="var(--c-app)"/>
+<text x="310" y="298" text-anchor="middle" class="ttl">OKE Cluster oke-prod (Enhanced) · private API endpoint</text>
+<rect x="95" y="312" width="140" height="90" class="box" fill="var(--surface)"/>
+<text x="165" y="332" text-anchor="middle" class="lbl">np-a1 (arm64)</text>
+<text x="165" y="350" text-anchor="middle" class="sub">A1.Flex 4 OCPU/24 GB ×3</text>
+<text x="165" y="366" text-anchor="middle" class="sub">core ×2 · exec ×2</text>
+<text x="165" y="382" text-anchor="middle" class="sub">autoscale 2–6 · FD-spread</text>
+<rect x="250" y="312" width="140" height="90" class="box" fill="var(--surface)"/>
+<text x="320" y="332" text-anchor="middle" class="lbl">platform ns</text>
+<text x="320" y="350" text-anchor="middle" class="sub">egress-proxy DaemonSet</text>
+<text x="320" y="366" text-anchor="middle" class="sub">Argo CD + Rollouts · otel</text>
+<text x="320" y="382" text-anchor="middle" class="sub">external-secrets · kyverno</text>
+<rect x="405" y="312" width="120" height="90" class="box" fill="var(--surface)"/>
+<text x="465" y="332" text-anchor="middle" class="lbl">removed</text>
+<text x="465" y="350" text-anchor="middle" class="sub">np-workflow (Temporal)</text>
+<text x="465" y="366" text-anchor="middle" class="sub">np-batch → T3</text>
+<rect x="95" y="415" width="430" height="90" class="box" fill="var(--surface)"/>
+<text x="310" y="437" text-anchor="middle" class="lbl">Cluster add-ons</text>
+<text x="310" y="456" text-anchor="middle" class="sub">Argo CD + Rollouts (canary, auto-rollback) · cert-manager · external-secrets · otel</text>
+<text x="310" y="472" text-anchor="middle" class="sub">NetworkPolicy default-deny + egress-proxy (allowlist in Git) · Kyverno · Prometheus</text>
+<text x="310" y="488" text-anchor="middle" class="sub">Workload Identity → OCI services (no static API keys in pods)</text>
+<path d="M165 195 L165 275" class="edge strong"/>
+
+<!-- Signer subnet -->
+<rect x="580" y="240" width="240" height="300" class="boundary" style="stroke:var(--danger)"/><text x="592" y="260" class="btitle" style="fill:var(--danger)">ISOLATED 10.10.40.0/26 (sn-signer)</text>
+<rect x="600" y="275" width="200" height="120" class="box" fill="var(--c-sec)"/>
+<text x="700" y="298" text-anchor="middle" class="ttl">np-signer (tainted)</text>
+<text x="700" y="316" text-anchor="middle" class="sub">E4.Flex 1 OCPU/8 GB · SEV</text>
+<text x="700" y="332" text-anchor="middle" class="sub">×2 across Fault Domains</text>
+<text x="700" y="350" text-anchor="middle" class="sub">Intent Signer · Solver Tx Signer</text>
+<text x="700" y="368" text-anchor="middle" class="sub">NSG: inbound 8443 mTLS from</text>
+<text x="700" y="384" text-anchor="middle" class="sub">decision/solver pods only</text>
+<rect x="600" y="410" width="200" height="110" class="box" fill="var(--c-sec)"/>
+<text x="700" y="433" text-anchor="middle" class="ttl">Egress policy</text>
+<text x="700" y="451" text-anchor="middle" class="sub">Service Gateway → Vault, Logging</text>
+<text x="700" y="467" text-anchor="middle" class="sub">no NAT route (no internet)</text>
+<text x="700" y="483" text-anchor="middle" class="sub">Tx broadcast returns signed bytes</text>
+<text x="700" y="499" text-anchor="middle" class="sub">to solver — signer never talks RPC</text>
+<path d="M540 340 L600 340" class="edge danger"/>
+<text x="570" y="330" text-anchor="middle" class="sub">mTLS</text>
+
+<!-- Data subnet -->
+<rect x="60" y="560" width="760" height="120" class="boundary" style="stroke:#7c3aed"/><text x="72" y="580" class="btitle" style="fill:#7c3aed">PRIVATE SUBNET 10.10.32.0/22 (sn-data) · no internet route</text>
+<rect x="80" y="595" width="170" height="70" class="box" fill="var(--c-data)"/>
+<text x="165" y="618" text-anchor="middle" class="ttl">OCI Database with PostgreSQL</text>
+<text x="165" y="636" text-anchor="middle" class="sub">1 node 2 OCPU/32 GB · PITR 7d</text>
+<text x="165" y="652" text-anchor="middle" class="sub">state · jobs · outbox · HA at T2</text>
+<rect x="270" y="595" width="150" height="70" class="box" fill="var(--c-data)"/>
+<text x="345" y="618" text-anchor="middle" class="ttl">Redis — removed</text>
+<text x="345" y="636" text-anchor="middle" class="sub">PG advisory locks</text>
+<text x="345" y="652" text-anchor="middle" class="sub">in-memory rate limit</text>
+<rect x="440" y="595" width="170" height="70" class="box" fill="var(--c-data)"/>
+<text x="525" y="618" text-anchor="middle" class="ttl">Streaming — removed</text>
+<text x="525" y="636" text-anchor="middle" class="sub">PG transactional outbox</text>
+<text x="525" y="652" text-anchor="middle" class="sub">Kafka-compatible at T5</text>
+<rect x="630" y="595" width="170" height="70" class="box" fill="var(--c-data)"/>
+<text x="715" y="618" text-anchor="middle" class="ttl">Own RPC node — deferred</text>
+<text x="715" y="636" text-anchor="middle" class="sub">2 providers (free/growth)</text>
+<text x="715" y="652" text-anchor="middle" class="sub">add at T4 (bill &gt; $300/mo)</text>
+<path d="M310 520 L310 595" class="edge"/>
+
+<!-- Service gateway & OCI services -->
+<rect x="60" y="700" width="760" height="60" class="box" fill="var(--c-oci)"/>
+<text x="440" y="722" text-anchor="middle" class="ttl">Service Gateway → OCI Services (private, no internet)</text>
+<text x="440" y="742" text-anchor="middle" class="sub">Vault/KMS · Secrets · Object Storage · OCIR · Logging · Monitoring · Notifications · Events</text>
+
+<!-- Right column: OCI services -->
+<rect x="870" y="160" width="190" height="60" class="box" fill="var(--c-oci)"/>
+<text x="965" y="185" text-anchor="middle" class="ttl">Egress proxy (in OKE)</text>
+<text x="965" y="203" text-anchor="middle" class="sub">FQDN allowlist in Git · no Firewall</text>
+<path d="M590 165 L870 190" class="edge"/>
+<rect x="870" y="250" width="190" height="80" class="box" fill="var(--c-oci)"/>
+<text x="965" y="275" text-anchor="middle" class="ttl">OCI Vault (HSM)</text>
+<text x="965" y="293" text-anchor="middle" class="sub">Master keys (AES-256) · Secrets</text>
+<text x="965" y="311" text-anchor="middle" class="sub">envelope for signer key material</text>
+<rect x="870" y="350" width="190" height="80" class="box" fill="var(--c-oci)"/>
+<text x="965" y="375" text-anchor="middle" class="ttl">Object Storage</text>
+<text x="965" y="393" text-anchor="middle" class="sub">audit-worm (retention lock 7y)</text>
+<text x="965" y="411" text-anchor="middle" class="sub">snapshots · backups · x-region repl</text>
+<rect x="870" y="450" width="190" height="80" class="box" fill="var(--c-oci)"/>
+<text x="965" y="475" text-anchor="middle" class="ttl">Observability</text>
+<text x="965" y="493" text-anchor="middle" class="sub">Logging · Monitoring · APM</text>
+<text x="965" y="511" text-anchor="middle" class="sub">Logging Analytics · Notifications</text>
+<rect x="870" y="550" width="190" height="80" class="box" fill="var(--c-oci)"/>
+<text x="965" y="575" text-anchor="middle" class="ttl">Security</text>
+<text x="965" y="593" text-anchor="middle" class="sub">Cloud Guard · Security Zones</text>
+<text x="965" y="611" text-anchor="middle" class="sub">Audit · Data Safe · VSS</text>
+<rect x="870" y="650" width="190" height="80" class="box" fill="var(--c-mgmt)"/>
+<text x="965" y="675" text-anchor="middle" class="ttl">Delivery</text>
+<text x="965" y="693" text-anchor="middle" class="sub">OCIR · Terraform (GH Actions)</text>
+<text x="965" y="711" text-anchor="middle" class="sub">OIDC · Renovate · Argo CD/Rollouts</text>
+<!-- external egress -->
+<rect x="870" y="740" width="190" height="50" class="box" fill="var(--c-ext)"/>
+<text x="965" y="761" text-anchor="middle" class="ttl">External APIs</text>
+<text x="965" y="778" text-anchor="middle" class="sub">via proxy: RPC · data · Telegram · LLM (Tier B)</text>
+<path d="M1060 205 L1072 205 L1072 765 L1060 765" class="edge"/>
+</svg>
+<div class="legend"><span><i style="background:var(--c-pub)"></i>Public subnet</span><span><i style="background:var(--c-app)"></i>OKE workloads</span><span><i style="background:var(--c-sec)"></i>Signer (isolated)</span><span><i style="background:var(--c-data)"></i>Managed data</span><span><i style="background:var(--c-oci)"></i>OCI services</span><span><i style="background:var(--c-mgmt)"></i>Delivery</span><span><i style="background:var(--c-ext)"></i>External</span></div>
+<figcaption>Hub ตัวเดียว (VCN prod) แบ่ง 4 subnet ตามระดับความไว: public (LB/gateways) → private workers → isolated signer (ไม่มี route ไป NAT) → data (ไม่มี route ออก internet เลย). egress ผ่าน egress-proxy ใน cluster (NetworkPolicy บังคับให้เฉพาะ proxy pods ออก NAT ได้) แทน Network Firewall; Redis/Streaming/own node ถูกตัด (กล่องเทาแสดงสิ่งที่ตัดและ trigger ที่จะเพิ่มกลับ)</figcaption>
+</figure>
+
+<h3>Subnet &amp; routing matrix</h3>
+<table>
+<tr><th>Subnet</th><th>CIDR</th><th>Route table</th><th>NSG ingress</th><th>NSG egress</th></tr>
+<tr><td>sn-public</td><td>10.10.0.0/24</td><td>0.0.0.0/0 → IGW</td><td>443 from Cloudflare IP ranges เท่านั้น (LB); Bastion managed</td><td>to sn-oke-workers 8080/8443</td></tr>
+<tr><td>sn-oke-workers (Stage 0: vm-app)</td><td>10.10.16.0/20</td><td>0.0.0.0/0 → NAT; OCI services → SGW</td><td>from LB (ingress ports); node-to-node; OKE control plane</td><td>sn-data 5432; sn-signer 8443; internet เฉพาะ egress-proxy pods (NetworkPolicy) → FQDN allowlist; Stage 0: nftables allowlist บน VM</td></tr>
+<tr><td>sn-signer</td><td>10.10.40.0/26</td><td>OCI services → SGW <strong>เท่านั้น</strong> (ไม่มี default route)</td><td>8443 from decision/solver pod NSG เท่านั้น</td><td>Vault, Logging, Monitoring ผ่าน SGW</td></tr>
+<tr><td>sn-data</td><td>10.10.32.0/22</td><td>OCI services → SGW เท่านั้น</td><td>5432 from sn-oke-workers</td><td>none (managed PostgreSQL only)</td></tr>
+</table>
+<p class="small">OKE ใช้ VCN-native pod networking (pods ได้ IP จาก sn-oke-workers) เพื่อให้ NSG ใช้กับ pod ได้โดยตรง; pods ของ decision/solver ถูกผูก NSG <code>nsg-signer-clients</code> ซึ่งเป็น NSG เดียวที่เข้า signer ได้</p>
+
+<!-- 4 -->
+<h2 id="compute">4. Compute: OKE Cluster Design</h2>
+<table>
+<tr><th>Item</th><th>Design</th></tr>
+<tr><td>Cluster type</td><td>OKE <strong>Enhanced</strong> (ต้องการ Workload Identity, add-on management, node cycling, SLA)</td></tr>
+<tr><td>Kubernetes version</td><td>N-1 ของ OKE ล่าสุด; upgrade ทุกไตรมาสผ่าน node cycling (surge 1, maxUnavailable 0)</td></tr>
+<tr><td>API endpoint</td><td>Private เท่านั้น; เข้าถึงผ่าน Bastion port-forward หรือ Argo CD (ภายใน cluster)</td></tr>
+<tr><td>Node pools</td><td><code>np-a1</code> VM.Standard.A1.Flex 4 OCPU/24 GB ×3 (arm64, FD-spread, Cluster Autoscaler 2–6; 1 node ≈ Always Free) · <code>np-signer</code> VM.Standard.E4.Flex 1 OCPU/8 GB Confidential (AMD SEV) ×2 (taint <code>signer=true:NoSchedule</code>, NSG แยก, subnet แยก). ไม่มี np-workflow/np-batch (Temporal → T3)</td></tr>
+<tr><td>Node image</td><td>Oracle Linux 8 OKE image, in-transit encryption, boot volume encrypted with customer-managed key (Vault)</td></tr>
+<tr><td>Pod security</td><td>Kyverno: non-root, read-only FS, drop caps, no hostPath; NetworkPolicy default-deny ทุก namespace</td></tr>
+<tr><td>Namespaces</td><td><code>core</code> (deployable core + ingress) · <code>exec</code> (deployable exec) · <code>signer</code> (restricted; only ns ที่ schedule บน np-signer) · <code>platform</code> (argocd, argo-rollouts, egress-proxy, otel, cert-manager, external-secrets, kyverno)</td></tr>
+<tr><td>Secrets</td><td>External Secrets Operator ↔ OCI Vault Secrets; pods ใช้ Workload Identity (ไม่มี OCI API key ใน cluster)</td></tr>
+<tr><td>Ingress</td><td>OCI Flexible LB 10 Mbps (NSG: Cloudflare IP ranges เท่านั้น — Terraform data source) ← Cloudflare Free WAF/DNS; ingress-nginx; TLS จาก cert-manager (origin cert)</td></tr>
+<tr><td>Scaling</td><td>HPA ต่อ deployable (CPU + custom metric: <code>jobs</code> backlog ใน PG); Cluster Autoscaler บน np-a1; np-signer fixed 2</td></tr>
+<tr><td>Progressive delivery</td><td>Argo Rollouts canary 10%→50%→100% พร้อม AnalysisTemplate จาก Prometheus (error rate, settle success) → auto-rollback; signer = blue/green ด้วย readiness ที่เซ็น test vector + ตรวจ config hash</td></tr>
+<tr><td>Egress control</td><td>NetworkPolicy default-deny egress ทุก ns; เฉพาะ <code>egress-proxy</code> DaemonSet (Envoy) ใน platform ns ออก NAT ได้; allowlist FQDN อยู่ใน Git (Renovate-managed) — แทน OCI Network Firewall (T6)</td></tr>
+</table>
+
+<!-- 5 -->
+<h2 id="data">5. Managed Data Services — Lean Phase-1</h2>
+<p class="small">Stage 0 ใช้ Postgres container + wal-g (หัวข้อ 2a); ตารางนี้คือเมื่อย้ายขึ้น managed ที่ T0</p>
+<table>
+<tr><th>Service</th><th>Config (prod)</th><th>ใช้สำหรับ</th><th>Backup / DR</th></tr>
+<tr><td>OCI Database with PostgreSQL</td><td>PG 16, <strong>1 node</strong> 2 OCPU/32 GB, 128 GB storage, TLS required, customer-managed key; HA 2 nodes ที่ T2</td><td><code>solarwind</code> DB: state, <code>jobs</code> queue, <code>outbox_events</code>, audit</td><td>Automated daily + PITR 7 วัน; backup copy ไป ap-tokyo-1; logical dump รายวันไป Object Storage (WORM)</td></tr>
+<tr><td>(Redis / Streaming — ไม่มีใน v3.0)</td><td>—</td><td>locks = PG advisory locks; events = PG outbox; cache = in-process</td><td>เพิ่ม OCI Streaming ที่ T5 (external solver feed)</td></tr>
+<tr><td>Object Storage</td><td>buckets: <code>sw-audit-worm</code> (retention rule locked 7y), <code>sw-snapshots</code>, <code>sw-backups</code>, <code>sw-artifacts</code>; versioning on; customer-managed keys</td><td>Immutable audit, LLM traces, snapshots, contract deployment records</td><td>Cross-region replication → ap-tokyo-1</td></tr>
+</table>
+<div class="callout"><strong>Job queue บน PostgreSQL (แทน Temporal):</strong> ตาราง <code>jobs</code> + <code>SELECT … FOR UPDATE SKIP LOCKED</code> โดย worker ใน <code>core</code>; per-user <code>next_run_at</code> index; retry/backoff ใน row; dead-letter = status <code>failed</code> + alarm. Temporal (Cloud ก่อน) เมื่อถึง T3 — ดู 01 ADR-002</div>
+
+<!-- 6 -->
+<h2 id="signer">6. Signer Isolation &amp; Key Management</h2>
+<div class="callout warn"><strong>ข้อจำกัดสำคัญ:</strong> OCI Vault KMS รองรับ ECDSA เฉพาะ NIST curves (P-256/384/521) และ RSA/AES — <em>ไม่รองรับ secp256k1</em> จึงเซ็น Ethereum tx/EIP-712 ใน HSM ของ Vault โดยตรงไม่ได้ ระบบจึงใช้แนวทาง <strong>envelope encryption + isolated signer</strong> ใน Phase 1 และ MPC/TEE provider ใน Phase 2</div>
+<figure>
+<svg viewBox="0 0 1000 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Signer key flow">
+<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+<rect x="20" y="20" width="960" height="320" class="boundary" style="stroke:var(--danger)"/><text x="32" y="40" class="btitle" style="fill:var(--danger)">SIGNER BOOT &amp; SIGN FLOW (sn-signer, Confidential VM)</text>
+<rect x="40" y="70" width="200" height="90" class="box" fill="var(--c-oci)"/>
+<text x="140" y="95" text-anchor="middle" class="ttl">OCI Vault · Secrets</text>
+<text x="140" y="113" text-anchor="middle" class="sub">secret: signer-key-blob (ciphertext)</text>
+<text x="140" y="129" text-anchor="middle" class="sub">KMS key: sw-signer-kek (HSM, AES-256)</text>
+<text x="140" y="145" text-anchor="middle" class="sub">policy: decrypt only by dg-signer-pods</text>
+<rect x="300" y="70" width="220" height="90" class="box" fill="var(--c-sec)"/>
+<text x="410" y="95" text-anchor="middle" class="ttl">Signer pod (boot)</text>
+<text x="410" y="113" text-anchor="middle" class="sub">1. Workload Identity → get secret</text>
+<text x="410" y="129" text-anchor="middle" class="sub">2. KMS Decrypt(blob) → key in RAM only</text>
+<text x="410" y="145" text-anchor="middle" class="sub">3. mlock, no swap, no core dumps</text>
+<path d="M240 115 L300 115" class="edge strong"/>
+<rect x="580" y="70" width="180" height="90" class="box" fill="var(--c-app)"/>
+<text x="670" y="95" text-anchor="middle" class="ttl">Decision / Solver pod</text>
+<text x="670" y="113" text-anchor="middle" class="sub">SPIFFE ID via cert-manager</text>
+<text x="670" y="129" text-anchor="middle" class="sub">NSG nsg-signer-clients</text>
+<path d="M580 140 L520 140" class="edge strong"/>
+<text x="550" y="132" text-anchor="middle" class="sub">mTLS</text>
+<rect x="40" y="200" width="720" height="120" class="box" fill="var(--surface)"/>
+<text x="400" y="224" text-anchor="middle" class="ttl">Sign request policy (enforced in signer, before any signing)</text>
+<text x="55" y="248" class="sub">• EIP-712 domain: name/version/chainId/verifyingContract ∈ allowlist (config from Vault, signed)</text>
+<text x="55" y="266" class="sub">• tokenIn/tokenOut ∈ PairRegistry mirror · amountIn ≤ hardCap(user) · deadline ≤ now+15m</text>
+<text x="55" y="284" class="sub">• Rate limit: ≤ 1 intent / user / period; ≤ N tx / min for solver key · every request logged (Logging, WORM)</text>
+<text x="55" y="302" class="sub">• Anomaly → auto "freeze" (refuse all) + page on-call; unfreeze requires 2-person approval</text>
+<rect x="800" y="70" width="160" height="90" class="box" fill="var(--c-oci)"/>
+<text x="880" y="95" text-anchor="middle" class="ttl">Logging → WORM</text>
+<text x="880" y="113" text-anchor="middle" class="sub">every sign attempt</text>
+<text x="880" y="129" text-anchor="middle" class="sub">Monitoring alarm on</text>
+<text x="880" y="145" text-anchor="middle" class="sub">denied &gt; 0</text>
+<path d="M410 70 L410 55 L880 55 L880 70" class="edge"/>
+<rect x="800" y="200" width="160" height="120" class="box" fill="var(--c-ext)"/>
+<text x="880" y="224" text-anchor="middle" class="ttl">Phase 2 option</text>
+<text x="880" y="244" text-anchor="middle" class="sub">MPC signer (Turnkey /</text>
+<text x="880" y="260" text-anchor="middle" class="sub">Fireblocks) with policy</text>
+<text x="880" y="276" text-anchor="middle" class="sub">engine; or TEE (SEV-SNP</text>
+<text x="880" y="292" text-anchor="middle" class="sub">attested) with remote</text>
+<text x="880" y="308" text-anchor="middle" class="sub">attestation gate</text>
+</svg>
+<figcaption>ใช้ <strong>default vault</strong> (shared HSM partition, ค่าใช้จ่ายเกือบศูนย์) — <em>ไม่ใช่</em> Virtual Private Vault ซึ่งมีค่าใช้จ่ายหลักพันดอลลาร์/เดือน . Key material ถูกเก็บเป็น ciphertext ใน Vault Secrets; decrypt ได้เฉพาะ dynamic group ของ signer pods; plaintext อยู่ใน RAM ของ Confidential VM เท่านั้น; ทุก sign request ผ่าน policy ก่อนและถูก log แบบ WORM</figcaption>
+</figure>
+<h3>Key inventory</h3>
+<table>
+<tr><th>Key</th><th>Where</th><th>Rotation</th><th>Blast radius</th></tr>
+<tr><td>Agent session key (secp256k1)</td><td>Vault Secret (ciphertext) → signer RAM</td><td>90 วัน (deploy agent address ใหม่ → ผู้ใช้ re-delegate ผ่าน wizard) หรือทันทีเมื่อสงสัย</td><td>≤ 1 period budget ต่อผู้ใช้ (on-chain caveat)</td></tr>
+<tr><td>Solver hot wallet key</td><td>เดียวกัน (secret แยก)</td><td>Quarterly; balance cap ≤ 48h gas</td><td>gas float เท่านั้น</td></tr>
+<tr><td>KEK <code>sw-userkeys-kek</code> (LLM keys ของผู้ใช้, Tier B)</td><td>Vault HSM; unwrap ได้เฉพาะ dynamic group ของ <code>core/llmproxy</code> (แยกจาก signer)</td><td>Annual (re-wrap DEK ทุก user ด้วย job)</td><td>credit ของ key ผู้ใช้ (spend-limited) — ไม่แตะ wallet</td></tr>
+<tr><td>KEK <code>sw-signer-kek</code></td><td>Vault HSM (FIPS 140-2 L3)</td><td>Annual (re-wrap secrets)</td><td>—</td></tr>
+<tr><td>DB/Volume/Bucket CMKs</td><td>Vault HSM</td><td>Annual</td><td>—</td></tr>
+<tr><td>Treasury / Guardian / Timelock admin</td><td>Safe multisig (hardware wallets, off-cloud)</td><td>Signer set review รายไตรมาส</td><td>governance only (ไม่แตะเงินผู้ใช้)</td></tr>
+<tr><td>TLS certs</td><td>OCI Certificates + cert-manager</td><td>Auto (90 วัน)</td><td>—</td></tr>
+</table>
+
+<!-- 7 -->
+<h2 id="iam">7. IAM &amp; Security Controls</h2>
+<h3>IAM groups &amp; policies (least privilege)</h3>
+<pre><code># Dynamic group: signer pods only (Workload Identity)
+dg-signer-pods: ALL { resource.type='workload', resource.namespace='signer', resource.cluster_id='&lt;oke-prod&gt;' }
+
+Allow dynamic-group dg-signer-pods to use keys in compartment cmp-prod-signer where target.key.id='&lt;sw-signer-kek&gt;'
+Allow dynamic-group dg-signer-pods to read secret-bundles in compartment cmp-prod-signer
+Allow dynamic-group dg-signer-pods to use log-content in compartment cmp-prod-signer
+
+# Core services: read secrets, write logs/metrics, use streaming, read/write app buckets (no signer compartment)
+dg-core-pods: ALL { resource.type='workload', resource.namespace='core', ... }
+Allow dynamic-group dg-core-pods to read secret-bundles in compartment cmp-prod where target.secret.name != 'signer-*'
+Allow dynamic-group dg-core-pods to use stream-push, stream-pull in compartment cmp-prod
+Allow dynamic-group dg-core-pods to manage objects in compartment cmp-prod where target.bucket.name='sw-snapshots'
+
+# Humans
+grp-platform-admins   → manage all-resources in cmp-prod (MFA, JIT via IAM policy time-bound; no access to cmp-prod-signer keys)
+grp-security          → manage cmp-security, cmp-prod-signer; read everywhere
+grp-devs              → read cmp-prod; manage cmp-dev
+grp-finops            → read usage-reports, budgets
+
+# WORM audit bucket: nobody can delete (retention rule locked); only Object Storage service writes via Logging service connector</code></pre>
+<h3>Control mapping</h3>
+<table>
+<tr><th>Control</th><th>OCI service / config</th></tr>
+<tr><td>Perimeter</td><td>Cloudflare Free (managed WAF rules, rate limiting, geo rules ตามข้อจำกัด RWA issuer, DDoS) → OCI LB ที่รับเฉพาะ Cloudflare IP ranges (Stage 0: Cloudflare Tunnel, ไม่มี inbound เลย); no public compute</td></tr>
+<tr><td>Egress control</td><td>NetworkPolicy default-deny + egress-proxy (Envoy) FQDN allowlist ใน Git (RPC providers, data feeds, api.telegram.org, LLM provider endpoints ที่รองรับสำหรับ Tier B — ห้าม private IP); Stage 0: nftables allowlist จาก cloud-init; sn-signer ไม่มี route ออก internet ในทุก stage; OCI Network Firewall เมื่อถึง T6</td></tr>
+<tr><td>Posture</td><td>Cloud Guard (Oracle-managed detector recipes + custom: public bucket, key without rotation, NSG open), Security Zones บน cmp-prod-signer และ cmp-security (ห้าม public IP, ห้าม bucket public, บังคับ CMK)</td></tr>
+<tr><td>Vulnerability</td><td>Vulnerability Scanning Service บน nodes; OCIR image scanning + Trivy ใน CI; Kyverno block images ที่ไม่ signed (cosign)</td></tr>
+<tr><td>Database</td><td>Data Safe (user assessment, activity auditing) บน PostgreSQL; TLS required; no public endpoint</td></tr>
+<tr><td>Audit</td><td>OCI Audit (365 วัน) → Service Connector → Object Storage WORM; Logging Analytics สำหรับ query</td></tr>
+<tr><td>Access</td><td>Bastion sessions (MFA, time-boxed, recorded); kubectl ผ่าน bastion เท่านั้น; break-glass procedure มี 2-person rule</td></tr>
+<tr><td>Supply chain</td><td>GitHub Actions OIDC → OCI (ไม่มี long-lived keys), SBOM (syft), image signing (cosign), Argo CD sync จาก signed commits เท่านั้น</td></tr>
+</table>
+
+<!-- 8 -->
+<h2 id="blockchain">8. Blockchain Connectivity (RPC, Nodes, Mempool)</h2>
+<table>
+<tr><th>Concern</th><th>Design</th></tr>
+<tr><td>RPC providers</td><td>Primary: Alchemy (free/growth tier) · Secondary: Base public RPC (mainnet.base.org) หรือ QuickNode free tier. Client ใช้ quorum health-check (block head ต่างกัน ≤ 2 → healthy) และ failover อัตโนมัติ; indexer ใช้ <code>eth_getLogs</code> เป็น batch ช่วง block กว้างเพื่อประหยัด compute units</td></tr>
+<tr><td>Own node (deferred → T4)</td><td>เพิ่มเมื่อ provider bill &gt; $300/เดือน หรือ provider outage กระทบ SLO ≥ 2 ครั้ง/ไตรมาส: E5.Flex 8/64 + 2 TB BV ใน sn-data (~$400/เดือน)</td></tr>
+<tr><td>Tx submission</td><td>Base: ส่งตรง sequencer RPC พร้อม tight deadline/minOut (ไม่มี public mempool); ถ้าเพิ่ม chain L1 ในอนาคต: Flashbots Protect / MEV Blocker + บังคับ <code>settleBatch</code></td></tr>
+<tr><td>Rate &amp; cost</td><td>Metric <code>rpc_compute_units_daily</code> + alarm ที่ 80% ของ free tier; <code>settleBatch</code> ลดจำนวน tx/simulation ต่อ user</td></tr>
+<tr><td>Network path</td><td><code>exec</code> → egress-proxy (allowlist: *.alchemy.com, mainnet.base.org) → NAT → internet; Stage 0: vm-app nftables allowlist เดียวกัน</td></tr>
+<tr><td>Secrets</td><td>RPC API keys ใน Vault Secrets; rotate 90 วัน; per-environment keys</td></tr>
+</table>
+
+<!-- 9 -->
+<h2 id="observability">9. Observability Stack</h2>
+<div class="grid">
+  <div class="card"><h4>Metrics</h4><p>Stage 0: otel → OCI Monitoring custom metrics (namespace <code>solarwind</code>) · Lean: Prometheus (in-cluster) → OCI Monitoring สำหรับ alarms; dashboard = Telegram bot commands (<code>/status</code>, <code>/cost</code>, <code>/canary</code>) ก่อน, Grafana เมื่อมีทีม</p></div>
+  <div class="card"><h4>Logs</h4><p>OTel Collector → OCI Logging (custom logs) → Logging Analytics; signer logs → แยก log group ใน cmp-prod-signer + Service Connector → WORM bucket</p></div>
+  <div class="card"><h4>Traces</h4><p>OpenTelemetry → OCI APM (trace id ผูก <code>decision_id</code>, <code>intent_id</code>, <code>tx_hash</code>) เพื่อไล่ end-to-end ต่อรอบ DCA</p></div>
+  <div class="card"><h4>Alerting</h4><p>OCI Monitoring Alarms → Notifications (ONS) → Telegram ops channel (ผ่าน OCI Functions webhook, ฟรี tier) + on-call free tier (Better Stack/PagerDuty) สำหรับ page; OCI Events (เช่น Vault key state change, IAM policy change) → Notifications ทันที</p></div>
+</div>
+<h3>Alarms ขั้นต่ำ (prod)</h3>
+<table>
+<tr><th>Alarm</th><th>Condition</th><th>Severity</th></tr>
+<tr><td>Signer denied requests</td><td><code>signer_denied_total &gt; 0</code> (1m)</td><td>Critical (page) + auto-freeze</td></tr>
+<tr><td>Solver wallet runway</td><td>ETH balance / avg gas per hour &lt; 24h</td><td>Critical</td></tr>
+<tr><td>Cycle completion</td><td>settled/expected &lt; 98% (24h)</td><td>High</td></tr>
+<tr><td>Snapshot staleness</td><td>age &gt; 10m</td><td>High</td></tr>
+<tr><td>RPC quorum</td><td>&lt; 2 healthy providers</td><td>High</td></tr>
+<tr><td>Postgres</td><td>replica lag &gt; 30s, storage &gt; 80%, connections &gt; 85%</td><td>High</td></tr>
+<tr><td>Job queue (PG)</td><td><code>jobs</code> backlog &gt; 500 for 10m; failed jobs &gt; 1%; oldest unlocked job &gt; 15m</td><td>High</td></tr>
+<tr><td>Canary user</td><td>canary delegation ไม่ settle ภายใน period</td><td>Critical</td></tr>
+<tr><td>Revenue (Phase A)</td><td>protocol fee/สัปดาห์ ต่ำกว่า gas/สัปดาห์ × 3; TVL ใกล้ cap ที่ audit ครอบ (admission control)</td><td>High</td></tr>
+<tr><td>Egress proxy</td><td>denied destinations &gt; 0 (ยกเว้น known noise)</td><td>High</td></tr>
+<tr><td>Capacity</td><td>oldest unlocked job &gt; 30m; pending-tx age &gt; 5m ต่อ wallet; DB CPU &gt; 70% (15m); allowance runway &lt; 7d</td><td>High</td></tr>
+<tr><td>Cost</td><td>RPC compute units &gt; 80% free tier; OCI cost forecast &gt; budget</td><td>High</td></tr>
+<tr><td>Security</td><td>Cloud Guard critical problem; IAM policy change; KMS key disabled</td><td>Critical</td></tr>
+<tr><td>Budget</td><td>OCI Budget 80%/100% forecast</td><td>Info/High</td></tr>
+</table>
+
+<!-- 10 -->
+<h2 id="cicd">10. CI/CD &amp; GitOps</h2>
+<figure>
+<svg viewBox="0 0 1000 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="CI/CD pipeline">
+<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+<rect x="20" y="40" width="170" height="90" class="box" fill="var(--c-ext)"/>
+<text x="105" y="65" text-anchor="middle" class="ttl">GitHub (monorepo)</text>
+<text x="105" y="83" text-anchor="middle" class="sub">signed commits · CODEOWNERS</text>
+<text x="105" y="99" text-anchor="middle" class="sub">2 reviewers on critical paths</text>
+<text x="105" y="115" text-anchor="middle" class="sub">branch protection</text>
+<rect x="230" y="40" width="200" height="90" class="box" fill="var(--c-mgmt)"/>
+<text x="330" y="65" text-anchor="middle" class="ttl">GitHub Actions (CI)</text>
+<text x="330" y="83" text-anchor="middle" class="sub">forge test/fuzz · pytest · go test</text>
+<text x="330" y="99" text-anchor="middle" class="sub">slither · trivy · syft SBOM</text>
+<text x="330" y="115" text-anchor="middle" class="sub">build → cosign sign</text>
+<path d="M190 85 L230 85" class="edge"/>
+<rect x="470" y="40" width="160" height="90" class="box" fill="var(--c-oci)"/>
+<text x="550" y="65" text-anchor="middle" class="ttl">OCIR</text>
+<text x="550" y="83" text-anchor="middle" class="sub">private registry · scanning</text>
+<text x="550" y="99" text-anchor="middle" class="sub">push via OIDC federation</text>
+<text x="550" y="115" text-anchor="middle" class="sub">immutable tags (sha)</text>
+<path d="M430 85 L470 85" class="edge"/>
+<rect x="670" y="40" width="150" height="90" class="box" fill="var(--c-ext)"/>
+<text x="745" y="65" text-anchor="middle" class="ttl">GitOps repo</text>
+<text x="745" y="83" text-anchor="middle" class="sub">compose digests / Helm values</text>
+<text x="745" y="99" text-anchor="middle" class="sub">image bump PR (bot) · Renovate</text>
+<text x="745" y="115" text-anchor="middle" class="sub">prod requires approval</text>
+<path d="M630 85 L670 85" class="edge"/>
+<rect x="860" y="40" width="120" height="90" class="box" fill="var(--c-app)"/>
+<text x="920" y="65" text-anchor="middle" class="ttl">Pull deploy</text>
+<text x="920" y="83" text-anchor="middle" class="sub">Stage 0: VM timer</text>
+<text x="920" y="99" text-anchor="middle" class="sub">Lean: Argo CD + Rollouts</text>
+<text x="920" y="115" text-anchor="middle" class="sub">verify sig · auto-rollback</text>
+<path d="M820 85 L860 85" class="edge strong"/>
+<!-- infra row -->
+<rect x="230" y="170" width="200" height="90" class="box" fill="var(--c-mgmt)"/>
+<text x="330" y="195" text-anchor="middle" class="ttl">Terraform (infra/terraform/oci)</text>
+<text x="330" y="213" text-anchor="middle" class="sub">plan on PR · apply on merge</text>
+<text x="330" y="229" text-anchor="middle" class="sub">state: OCI Object Storage backend</text>
+<text x="330" y="245" text-anchor="middle" class="sub">or OCI Resource Manager stacks</text>
+<path d="M105 130 L105 215 L230 215" class="edge"/>
+<rect x="470" y="170" width="350" height="90" class="box" fill="var(--c-oci)"/>
+<text x="645" y="195" text-anchor="middle" class="ttl">OCI (staging → prod)</text>
+<text x="645" y="213" text-anchor="middle" class="sub">Stage 0 VMs · VCN · OKE · PostgreSQL · Vault · LB · Cloudflare</text>
+<text x="645" y="229" text-anchor="middle" class="sub">prod apply: manual approval + change ticket</text>
+<text x="645" y="245" text-anchor="middle" class="sub">drift detection nightly</text>
+<path d="M430 215 L470 215" class="edge"/>
+<rect x="860" y="170" width="120" height="90" class="box" fill="var(--c-ext)"/>
+<text x="920" y="195" text-anchor="middle" class="ttl">Contracts</text>
+<text x="920" y="213" text-anchor="middle" class="sub">forge script deploy</text>
+<text x="920" y="229" text-anchor="middle" class="sub">from hardware wallet</text>
+<text x="920" y="245" text-anchor="middle" class="sub">(never from CI)</text>
+</svg>
+<figcaption>App path: CI build/sign (multi-arch) → OCIR → digest bump PR → pull-based deploy (Stage 0: systemd timer บน VM; Lean: Argo CD + Rollouts). Infra path: Terraform plan บน PR / apply on merge. Contract deployment แยกออกจาก CI โดยสิ้นเชิง (เซ็นจาก hardware wallet ของ deployer) แต่ CI เตรียม bundle ก่อนและ verify bytecode/source หลัง deploy</figcaption>
+</figure>
+<ul>
+  <li><strong>Deploy strategy:</strong> <code>core</code>/<code>exec</code> = rolling (Stage 0) / Rollouts canary + auto-rollback (Lean); <strong>signer</strong> = blue/green ด้วย readiness ที่เซ็น test vector + ตรวจ allowlist config hash ตรงกับ Git; job worker drain ก่อน swap (payload มี <code>schema_version</code>)</li>
+  <li><strong>Promotion:</strong> CI (tests/fuzz/slither/evals/import-linter) → e2e บน Anvil (จาก <code>simulations/</code>) → <em>ephemeral staging</em> (Base Sepolia) ผ่าน <code>ops-staging.yml</code> soak 24h → prod ด้วย GitHub Environment required reviewer (1 คลิก)</li>
+  <li><strong>Rollback:</strong> revert digest bump PR → pull deploy (&lt; 5 นาที); DB migration ต้อง backward-compatible (expand/contract)</li>
+  <li><strong>Dependencies:</strong> Renovate PR อัตโนมัติ (images, Helm, Terraform providers, Foundry, Python/Go deps); auto-merge minor/patch เมื่อ CI เขียว; major ต้อง review</li>
+  <li><strong>Canary user:</strong> delegation ของบริษัท 1 USDC/สัปดาห์บน mainnet — ถ้าไม่ settle ภายใน period = alarm Critical (end-to-end probe รวมเชนจริง)</li>
+  <li><strong>Contracts:</strong> <code>release-contracts.yml</code> สร้าง bundle (bytecode hash, args, CREATE2 address) → คนเซ็น 1 tx จาก hardware wallet → workflow verify on-chain bytecode, verify source บน explorer, gen ABI ลง <code>packages/sdk</code>, เปิด PR อัปเดต addresses</li>
+</ul>
+
+<!-- 11 -->
+<h2 id="envs">11. Environments</h2>
+<table>
+<tr><th>Env</th><th>Where</th><th>Chain</th><th>Shape</th><th>Data</th></tr>
+<tr><td>dev (local)</td><td>Docker Compose บนเครื่อง dev (<code>make up</code> = workshop <code>up-dca.sh</code>)</td><td>Anvil fork</td><td>—</td><td>Postgres container; mock LLM; e2e จาก <code>simulations/</code></td></tr>
+<tr><td>staging (ephemeral)</td><td>OCI <code>cmp-staging</code>: สร้างโดย <code>ops-staging.yml up</code> (Terraform) และ auto-destroy หลัง 24 ชม. หรือ <code>down</code></td><td>Base Sepolia</td><td>Stage 0: 1 A1 VM (paid ~$55 ระหว่างเปิด) + Micro signer; Lean: OKE Basic (ฟรี) 1 A1 node + PG 1 OCPU</td><td>Synthetic users; ไม่มี WORM lock; ≤ 100 ชม./เดือน ≈ $50–150</td></tr>
+<tr><td>prod — Stage 0</td><td>OCI <code>cmp-prod</code> (ap-singapore-1): vm-app + vm-signer (หัวข้อ 2a); DR = replicated buckets + <code>ops-dr.yml</code></td><td>Base mainnet</td><td>Always Free</td><td>Real; WORM; CMK; OCI ≈ $0–5</td></tr>
+<tr><td>prod — Lean Phase-1 (T0)</td><td>OCI <code>cmp-prod</code>: OKE + managed PostgreSQL (หัวข้อ 3–5); cold DR ap-tokyo-1</td><td>Base mainnet</td><td>ตาม หัวข้อ 4–5</td><td>Real; WORM; CMK; ~$450–700</td></tr>
+</table>
+
+<!-- 12 -->
+<h2 id="dr">12. High Availability &amp; Disaster Recovery</h2>
+<figure>
+<svg viewBox="0 0 1000 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DR topology">
+<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+<rect x="20" y="30" width="440" height="270" class="boundary" style="stroke:var(--accent)"/><text x="32" y="50" class="btitle" style="fill:var(--accent)">ap-singapore-1 · ACTIVE</text>
+<rect x="40" y="70" width="190" height="60" class="box" fill="var(--c-app)"/><text x="135" y="95" text-anchor="middle" class="ttl">Compute (Stage 0 VMs / OKE)</text><text x="135" y="113" text-anchor="middle" class="sub">FD-spread · signer isolated</text>
+<rect x="250" y="70" width="190" height="60" class="box" fill="var(--c-data)"/><text x="345" y="95" text-anchor="middle" class="ttl">PostgreSQL</text><text x="345" y="113" text-anchor="middle" class="sub">1 node · PITR 7d (HA at T2)</text>
+<rect x="40" y="150" width="190" height="60" class="box" fill="var(--c-data)"/><text x="135" y="175" text-anchor="middle" class="ttl">Object Storage</text><text x="135" y="193" text-anchor="middle" class="sub">WORM · backups · snapshots</text>
+<rect x="250" y="150" width="190" height="60" class="box" fill="var(--c-oci)"/><text x="345" y="175" text-anchor="middle" class="ttl">Vault (HSM)</text><text x="345" y="193" text-anchor="middle" class="sub">keys · secrets</text>
+<rect x="40" y="245" width="400" height="40" class="box" fill="var(--c-pub)"/><text x="240" y="270" text-anchor="middle" class="sub">Public DNS (OCI DNS) · health-check steering policy → active region</text>
+
+<rect x="540" y="30" width="440" height="270" class="boundary"/><text x="552" y="50" class="btitle">ap-tokyo-1 · COLD (Terraform on demand)</text>
+<rect x="560" y="70" width="190" height="60" class="box" fill="var(--c-data)"/><text x="655" y="95" text-anchor="middle" class="ttl">PostgreSQL (on demand)</text><text x="655" y="113" text-anchor="middle" class="sub">restore from replicated backups</text>
+<rect x="770" y="70" width="190" height="60" class="box" fill="var(--c-app)"/><text x="865" y="95" text-anchor="middle" class="ttl">Compute: not running</text><text x="865" y="113" text-anchor="middle" class="sub">created by ops-dr.yml on failover</text>
+<rect x="560" y="150" width="190" height="60" class="box" fill="var(--c-oci)"/><text x="655" y="175" text-anchor="middle" class="ttl">Vault (default, DR region)</text><text x="655" y="193" text-anchor="middle" class="sub">re-wrapped secrets via pipeline</text>
+<rect x="770" y="150" width="190" height="60" class="box" fill="var(--c-data)"/><text x="865" y="175" text-anchor="middle" class="ttl">Object Storage</text><text x="865" y="193" text-anchor="middle" class="sub">replicated bucket (read-only)</text>
+<rect x="560" y="245" width="400" height="40" class="box" fill="var(--c-pub)"/><text x="760" y="270" text-anchor="middle" class="sub">ops-dr.yml: apply → restore PG → reconcile → smoke → approve DNS flip</text>
+
+<path d="M440 100 L560 100" class="edge"/><text x="500" y="92" text-anchor="middle" class="sub">backups ≤ 15 min</text>
+<path d="M440 180 L560 180" class="edge"/><text x="500" y="172" text-anchor="middle" class="sub">vault replication</text>
+<path d="M135 210 L135 226 L865 226 L865 210" class="edge"/><text x="500" y="238" text-anchor="middle" class="sub">object replication (WORM on both sides)</text>
+</svg>
+<figcaption>Cold DR: ไม่มี compute ใน DR region จนกว่าจะ failover — RPO ≤ 15 นาที (WAL/backup + object replication), RTO 2–4 ชม. ผ่าน <code>ops-dr.yml</code> ที่ซ้อมอัตโนมัติรายไตรมาส (apply → smoke → destroy). เพราะสถานะที่สำคัญที่สุด (delegations, spent budgets, nonces) อยู่บนเชน การกู้คืน DB จึง reconcile จาก chain events ได้เสมอ; warm standby เมื่อถึง T7</figcaption>
+</figure>
+<table>
+<tr><th>Layer</th><th>HA (in-region)</th><th>DR (cross-region)</th></tr>
+<tr><td>Compute</td><td>Stage 0: single VM (SPOF, canary alarm) · Lean: np-a1 กระจาย 3 FDs, PDB, HPA</td><td>ไม่มี standby; <code>ops-dr.yml</code> สร้างจาก Terraform <code>envs/dr</code> + Argo sync (same GitOps repo, env=dr)</td></tr>
+<tr><td>PostgreSQL</td><td>Stage 0: container + wal-g · Lean: managed 1 node (HA ที่ T2)</td><td>Backups replicate → ap-tokyo-1; restore on demand ใน workflow</td></tr>
+<tr><td>Object Storage</td><td>Regional (11 nines durability)</td><td>Cross-region replication (WORM rule ทั้งสองฝั่ง)</td></tr>
+<tr><td>Vault</td><td>default vault (HSM-backed, regional)</td><td>secrets เป็น ciphertext อยู่แล้ว: pipeline re-wrap ด้วย KEK ของ DR region แล้วเก็บใน replicated bucket; <em>ไม่ใช้</em> Virtual Private Vault (ค่าใช้จ่ายสูงมาก )</td></tr>
+<tr><td>Signer</td><td>Stage 0: 1 Micro VM (+spare) · Lean: 2 replicas ต่าง FD; freeze-by-default</td><td>DR signer เริ่มที่ 0 replicas; unfreeze ต้อง 2-person approval หลังยืนยันว่า primary ตายจริง (ป้องกัน split-brain double-sign — nonce บนเชนป้องกัน double-settle อยู่แล้ว)</td></tr>
+<tr><td>Chain data</td><td>2 RPC providers</td><td>Providers เป็น global อยู่แล้ว</td></tr>
+</table>
+<div class="callout"><strong>Safe-by-default ระหว่าง incident:</strong> ถ้าระบบล่ม ผลลัพธ์คือ "ไม่ซื้อในรอบนั้น" ไม่ใช่ "เงินหาย" — ผู้ใช้ยัง revoke ได้ตลอดเวลาโดยไม่พึ่งแพลตฟอร์ม</div>
+
+<!-- 13 -->
+<h2 id="cost">13. Cost Model (indicative, USD/เดือน, list price) — v3.0</h2>
+<table>
+<tr><th>Component</th><th>Stage 0 (solo dev)</th><th class="num">$</th><th>Lean Phase-1 (T0+)</th><th class="num">$</th><th class="num">v3.0 (อ้างอิง)</th></tr>
+<tr><td>Control plane</td><td>— (Compose)</td><td class="num">0</td><td>OKE Enhanced (prod) · Basic ฟรี (staging)</td><td class="num">75</td><td class="num">75</td></tr>
+<tr><td>App compute</td><td>1× A1.Flex 4/24 Always Free</td><td class="num">0</td><td>3× A1.Flex 4/24 (1 node ≈ Always Free)</td><td class="num">110–170</td><td class="num">600–650</td></tr>
+<tr><td>Signer compute</td><td>1–2× E2.1.Micro Always Free</td><td class="num">0</td><td>2× E4.Flex 1/8 Confidential</td><td class="num">50–60</td><td class="num">100–130</td></tr>
+<tr><td>PostgreSQL</td><td>container + block volume (free 200 GB)</td><td class="num">0</td><td>managed 1 node 2/32 + 128 GB, PITR 7d</td><td class="num">150–250</td><td class="num">700–900</td></tr>
+<tr><td>Redis / Streaming / Temporal</td><td>— (Postgres)</td><td class="num">0</td><td>— (Postgres)</td><td class="num">0</td><td class="num">380–460</td></tr>
+<tr><td>Edge</td><td>Cloudflare Free + Tunnel</td><td class="num">0</td><td>Flexible LB 10 Mbps + Cloudflare Free</td><td class="num">10–20</td><td class="num">40–80</td></tr>
+<tr><td>Egress control</td><td>nftables allowlist</td><td class="num">0</td><td>egress-proxy in OKE</td><td class="num">0</td><td class="num">500–600</td></tr>
+<tr><td>NAT · Bastion · Vault · Logging · Monitoring · Object Storage</td><td>free tiers (≤ 20 GB, ≤ 10 GB logs)</td><td class="num">0–5</td><td>default vault · ~200 GB storage · logs</td><td class="num">40–80</td><td class="num">150–250</td></tr>
+<tr><td>Own RPC node</td><td>— (T4)</td><td class="num">0</td><td>— (T4)</td><td class="num">0</td><td class="num">350–450</td></tr>
+<tr><td>DR</td><td>replicated buckets</td><td class="num">0–5</td><td>cold: replicated buckets only</td><td class="num">10–30</td><td class="num">200–300</td></tr>
+<tr><td><strong>Prod subtotal (OCI)</strong></td><td></td><td class="num"><strong>0–10</strong></td><td></td><td class="num"><strong>450–700</strong></td><td class="num"><strong>2,900–3,900</strong></td></tr>
+<tr><td>Staging</td><td>ephemeral (paid A1 ระหว่างเปิด)</td><td class="num">0–50</td><td>ephemeral ≤ 100 ชม./เดือน</td><td class="num">50–150</td><td class="num">700–1,000</td></tr>
+<tr><td><strong>Total OCI</strong></td><td></td><td class="num"><strong>0–60</strong></td><td></td><td class="num"><strong>500–850</strong></td><td class="num"><strong>3,600–4,900</strong></td></tr>
+<tr><td>External (นอก OCI)</td><td colspan="4">RPC free/growth tier (0–100) · LLM $0 (BYO key ฝั่งผู้ใช้) · Telegram/Cloudflare/GitHub/on-call free tier · <em>gas ที่ solver จ่าย</em>: Base ≈ $0.01–0.05/settle, <code>settleBatch</code> ลด 40–60% — ที่ 1,000 users/สัปดาห์ ≈ $40–200/เดือน</td><td class="num">500–1,500 + gas</td></tr>
+</table>
+<p class="small">ตัวเลขเป็นค่าประมาณจาก list price เพื่อวางงบเท่านั้น — ยืนยันด้วย OCI Cost Estimator; ตั้ง OCI Budget + alerts ต่อ compartment ตั้งแต่วันแรก และ alarm สำหรับ RPC compute units / gas per settle (หัวข้อ 9)</p>
+
+<!-- 14 -->
+<h2 id="terraform">14. Terraform / IaC Layout</h2>
+<pre><code>infra/terraform/oci/
+├── modules/
+│   ├── tenancy-foundation/   # compartments, IAM groups/policies, identity domain, budgets, Cloud Guard, Security Zones
+│   ├── network/              # VCN, subnets, IGW/NAT/SGW, route tables, NSGs (shared by Stage 0 and Lean)
+│   ├── oke/                  # cluster (enhanced), node pools (a1/signer), add-ons, workload identity
+│   ├── stage0-compute/       # 2 Always-Free VMs + cloud-init (compose, cloudflared, pull-deploy timer, nftables)
+│   ├── postgres/             # OCI Database with PostgreSQL system, config, backups, cross-region copy
+│   ├── vault/                # vault, KEKs, CMKs, secrets (placeholders), replication
+│   ├── storage/              # buckets, retention rules (WORM), replication, lifecycle
+│   ├── edge/                 # Flexible LB (Cloudflare IP allowlist NSG)
+│   ├── observability/        # log groups, service connectors, alarms, notification topics, APM domain
+│   └── bastion/
+├── envs/
+│   ├── stage0/               # prod today: network + stage0-compute + vault + storage + observability (≈ 4 files)
+│   ├── staging/              # ephemeral; applied/destroyed by .github/workflows/ops-staging.yml
+│   ├── lean/                 # prod at T0: adds oke + postgres + edge
+│   └── dr/                   # cold; applied by ops-dr.yml only
+├── ../cloudflare/            # zone, DNS, Pages project, Tunnel, WAF/rate-limit rules
+└── README.md                 # make bootstrap: foundation → network → vault → storage → (stage0-compute | postgres → oke → edge) → observability
+
+infra/k8s/
+├── charts/&lt;service&gt;/         # Helm chart per service (values-{staging,prod,dr}.yaml)
+├── platform/                 # argocd, cert-manager, external-secrets, otel, kyverno, ingress
+└── argocd/apps/              # ApplicationSets per env</code></pre>
+
+<!-- 15 -->
+<h2 id="runbooks">15. Runbooks (สรุป)</h2>
+<table>
+<tr><th>Runbook</th><th>Trigger</th><th>Steps (ย่อ)</th><th style="width:22%">Automation</th></tr>
+<tr><td>RB-01 Signer freeze / unfreeze</td><td>denied &gt; 0, anomaly, suspected compromise</td><td>1) auto-freeze (signer refuses all) 2) page 3) ตรวจ logs WORM 4) ถ้า compromise: rotate session key → deploy agent address ใหม่ → แจ้งผู้ใช้ re-delegate + revoke agent เก่า (UI one-click) 5) unfreeze ต้อง 2-person</td><td>auto-freeze ใน signer; <code>ops-signer-unfreeze.yml</code> (GitHub Environment 2 reviewers → Bastion session → unfreeze)</td></tr>
+<tr><td>RB-02 Solver wallet refill</td><td>runway &lt; 48h</td><td>Refill bot (job ใน <code>exec</code>) ดึง ETH จาก Treasury Safe ผ่าน <strong>Safe Allowance Module</strong> ≤ cap/วัน (สูตรใน หัวข้อ 15c: 2× avg gas/day + buffer); คนเซ็นเฉพาะตอน top-up Treasury รายเดือน/แก้ allowance</td><td>อัตโนมัติภายใต้ allowance; alarm เมื่อ allowance เหลือ &lt; 3 วัน</td></tr>
+<tr><td>RB-03 RPC degradation</td><td>quorum &lt; 2</td><td>Failover อัตโนมัติ; ถ้าเหลือ provider เดียว → ลด batch, เพิ่ม deadline buffer; แจ้ง provider</td><td>ใน client; alarm เท่านั้น</td></tr>
+<tr><td>RB-04 Regional failover</td><td>Primary region outage &gt; 30 นาที</td><td>Terraform apply envs/dr → restore PostgreSQL → deploy → reconcile จาก chain events → smoke → unfreeze signer (2-person) → flip DNS (Cloudflare API)</td><td><code>ops-dr.yml</code> (workflow_dispatch: up | drill | down); drill รายไตรมาสโดย cron</td></tr>
+<tr><td>RB-05 Contract incident</td><td>Bug/exploit suspicion</td><td>Guardian pauseSettle() → แจ้งผู้ใช้ (revoke ยังทำได้) → postmortem → migration plan (deploy ใหม่, re-delegate wizard)</td><td>CI เตรียม Safe tx (pause) พร้อม simulation; คนเซ็น; broadcast ผู้ใช้อัตโนมัติผ่าน notifier</td></tr>
+<tr><td>RB-06 Key rotation (scheduled)</td><td>ทุก 90 วัน</td><td>Generate ใน signer (never leaves enclave) → wrap ด้วย KEK → secret version ใหม่ → dual-run → re-delegate prompt ถึงผู้ใช้ → revoke agent เก่าเมื่อ migrated/expired</td><td><code>ops-rotate-key.yml</code> (cron 90d) + notifier; dashboard % migrated; คนไม่ต้องทำอะไร</td></tr>
+<tr><td>RB-07 DB restore drill</td><td>รายเดือน</td><td>Restore PITR → run reconciliation → เทียบกับ chain state → post RPO/RTO จริงลง Telegram ops</td><td><code>ops-restore-drill.yml</code> (cron monthly)</td></tr>
+<tr><td>RB-08 Staging up/down</td><td>ก่อน release / หลัง soak</td><td>Terraform apply cmp-staging → deploy → e2e → soak 24h → destroy</td><td><code>ops-staging.yml</code> (auto-destroy หลัง 24h)</td></tr>
+</table>
+
+<!-- 15a -->
+<h2 id="triggers">15a. Scale-up Triggers (เมื่อไหร่ค่อยเพิ่มกลับ)</h2>
+<p>ทุกสิ่งที่ถูกตัดออกใน v3.0 มี trigger ที่วัดได้ว่าจะเพิ่มกลับเมื่อไหร่ — trigger แต่ละตัวควรเป็น alarm ใน Terraform ที่เปิด GitHub issue อัตโนมัติ</p>
+<table>
+<tr><th style="width:8%">ID</th><th style="width:30%">Trigger (วัดได้)</th><th>เพิ่มอะไรกลับ</th><th style="width:14%">Cost delta</th></tr>
+<tr><td><strong>T0</strong></td><td>ผู้ใช้จ่ายเงิน &gt; 200 คน หรือ TVL ภายใต้ delegation &gt; $250k หรือ partner/audit ต้องการ HA/confidential compute หรือ vm-app outage ทำให้พลาด &gt; 1 รอบ/เดือน</td><td><strong>Stage 0 → Lean Phase-1</strong>: OKE Enhanced + managed PostgreSQL + Confidential VM signer + Argo (Compose → Helm ด้วยโครง service เดิม)</td><td class="num">+$500–700</td></tr>
+<tr><td>T1</td><td>p95 job latency &gt; 5 นาที หรือ CPU ของ core &gt; 70% ต่อเนื่อง 1 ชม. (HPA ชน max)</td><td>เพิ่ม A1 node ผ่าน Cluster Autoscaler (อัตโนมัติอยู่แล้ว — ไม่ต้องตัดสินใจ)</td><td class="num">+$55/node</td></tr>
+<tr><td>T2</td><td>active delegations &gt; 5,000 หรือ SLO cycle completion พลาดจาก DB incident ≥ 1 ครั้ง</td><td>PostgreSQL HA 2 nodes + read replica สำหรับ indexer</td><td class="num">+$300–500</td></tr>
+<tr><td>T3</td><td>Workflow ต้องมี human-in-the-loop steps / multi-day sagas / &gt; 50k jobs/วัน</td><td>Temporal (Cloud ก่อน self-host)</td><td class="num">+$100–300</td></tr>
+<tr><td>T4</td><td>RPC provider bill &gt; $300/เดือน หรือ provider outage กระทบ SLO ≥ 2 ครั้ง/ไตรมาส</td><td>Own RPC node บน OCI (E5 8/64 + 2 TB)</td><td class="num">+$400</td></tr>
+<tr><td>T5</td><td>เปิด external solver auction (Phase 3)</td><td>OCI Streaming สำหรับ intent feed + SolverRegistry bonds</td><td class="num">+$50–100</td></tr>
+<tr><td>T6</td><td>Compliance/audit ต้องการ managed egress inspection หรือ TVL &gt; $10M</td><td>OCI Network Firewall (หรือ Cilium Enterprise)</td><td class="num">+$550</td></tr>
+<tr><td>T7</td><td>Business ต้องการ RTO &lt; 1 ชม. (SLA กับ partner)</td><td>Warm DR + cross-region PG standby</td><td class="num">+$250–400</td></tr>
+<tr><td>T8</td><td>Signer sign-rate &gt; 10/s หรือ ต้องการ multi-party control</td><td>MPC provider (Turnkey/Fireblocks) — ค่าใช้จ่ายตาม tx</td><td class="num">vendor</td></tr>
+</table>
+<p class="small">ทุก trigger ควรเป็น alarm ใน Terraform ที่เปิด GitHub issue อัตโนมัติพร้อมลิงก์มาที่ตารางนี้ — การ scale จึงเป็น "ตอบ issue" ไม่ใช่ "จำได้ว่าเคยตัดอะไร"</p>
+
+
+<!-- 15b -->
+<h2 id="not-automated">15b. สิ่งที่จงใจ <em>ไม่</em> automate (และทำไม)</h2>
+<table>
+<tr><th style="width:30%">Step</th><th>เหตุผล</th><th style="width:30%">ทำให้ "เบา" ที่สุดยังไง</th></tr>
+<tr><td>เซ็น tx deploy/upgrade registries/fee (Timelock + Safe)</td><td>Governance key ต้องไม่อยู่บน cloud — ถ้า automate = single point ที่แฮกแล้วเปลี่ยน fee/registry ได้</td><td>CI เตรียม Safe tx (calldata + simulation) ให้พร้อม; คนแค่ review diff และ sign บน hardware wallet</td></tr>
+<tr><td>Unfreeze signer</td><td>Auto-unfreeze จะทำให้ attacker ที่ trigger freeze/unfreeze loop ได้; ต้องมีคนยืนยันว่า anomaly เป็น false positive</td><td>2-reviewer GitHub Environment (คลิกเดียว), context ครบใน PR อัตโนมัติ</td></tr>
+<tr><td>Top-up Treasury Safe</td><td>การเติมเงินก้อนใหญ่จาก cold storage ต้องมี human intent; refill รายวันจาก Treasury → hot wallet automate แล้ว (Allowance Module)</td><td>รายเดือน; alarm ล่วงหน้า 14 วัน</td></tr>
+<tr><td>Promote to prod</td><td>Regulatory/business: ต้องมี accountable approver ต่อ release ที่แตะเงินผู้ใช้</td><td>Required reviewer 1 คน; ทุกอย่างก่อนหน้า (tests, staging soak, canary) อัตโนมัติ</td></tr>
+<tr><td>ผู้ใช้เซ็น approve/configure/revoke/re-delegate</td><td>นี่คือคำนิยามของ non-custodial — automate ไม่ได้และไม่ควร</td><td>Batch เป็น 1 tx (Safe/AA), deep link จาก Telegram, preview อ่านง่าย</td></tr>
+<tr><td>Flip DNS ตอน DR</td><td>Split-brain risk ถ้า primary กลับมา; ต้องยืนยันว่า primary ตายจริง</td><td>Workflow เตรียมทุกอย่างและถามคำถามเดียว</td></tr>
+</table>
+
+
+<!-- 15c -->
+<h2 id="capacity">15c. Capacity &amp; Scaling — "รับลูกค้าเยอะได้ไหม"</h2>
+<p>Workload ของ DCA คือ <strong>1 cycle ต่อ user ต่อ period</strong> และแต่ละ cycle มีเวลาทั้ง period (7 วัน) ให้ทำ — ระบบจึง <em>elastic in time</em>: load spike ทำให้ซื้อช้าลงหลายชั่วโมง ไม่ใช่ล่ม. คอขวดจริงอยู่ที่ <em>ภายนอก</em> (RPC, gas/wallet, venue, issuer KYC) ไม่ใช่ compute ของเรา</p>
+
+<h3>Capacity model (period 7 วัน, งบเฉลี่ย 50 USDC)</h3>
+<table>
+<tr><th>Users</th><th class="num">cycles/วัน</th><th class="num">jobs เฉลี่ย</th><th class="num">settle tx/วัน<br><span class="small">(batch 50)</span></th><th class="num">gas/สัปดาห์<br><span class="small">(L2, หลัง batch)</span></th><th class="num">inflow/สัปดาห์</th><th>Stage ที่รองรับ</th></tr>
+<tr><td>1k</td><td class="num">~140</td><td class="num">0.1/นาที</td><td class="num">~3</td><td class="num">~$10–20</td><td class="num">$50k</td><td>Stage 0</td></tr>
+<tr><td>10k</td><td class="num">~1,400</td><td class="num">1/นาที</td><td class="num">~30</td><td class="num">~$100–200</td><td class="num">$500k</td><td>Stage 0 (ทางเทคนิค) → Lean ตาม T0</td></tr>
+<tr><td>100k</td><td class="num">~14,000</td><td class="num">10/นาที</td><td class="num">~300</td><td class="num">~$1–2k</td><td class="num">$5M</td><td>Lean (HPA 2–6) + RPC paid tier + PG HA (T2)</td></tr>
+<tr><td>1M</td><td class="num">~143,000</td><td class="num">~1.7/วินาที</td><td class="num">~3,000 (2/นาที)</td><td class="num">~$5–20k</td><td class="num">$50M</td><td>Lean + wallet sharding + own node (T4) + PG partitioning</td></tr>
+</table>
+<p class="small">gas ต่อ user หลัง <code>settleBatch</code> ≈ $0.005–0.02; fee 15–30 bps ของ 50 USDC = $0.075–0.15/cycle → รายได้ครอบ gas ~5–10× ที่ทุกระดับ</p>
+
+<h3>Scaling levers ต่อ component</h3>
+<table>
+<tr><th style="width:18%">Component</th><th>วิธี scale</th><th style="width:22%">Auto?</th><th style="width:20%">คอขวดเมื่อ</th></tr>
+<tr><td>Web</td><td>Cloudflare Pages/CDN</td><td>✅ ไม่จำกัด</td><td>—</td></tr>
+<tr><td>API (<code>core</code>)</td><td>HPA on CPU + p95 latency; Cloudflare rate limit หน้า API</td><td>✅ Lean · ❌ Stage 0 (VM เดียว)</td><td>SIWE/preview เบามาก — onboarding burst ไม่ใช่ปัญหา</td></tr>
+<tr><td>Job workers (<code>core</code>)</td><td>HPA on <code>jobs</code> backlog (oldest unlocked age &gt; 5 นาที → scale out); Cluster Autoscaler 2–6 nodes (ขยาย max ได้ใน Terraform)</td><td>✅ Lean</td><td>ไม่ใช่ที่ 1M — SKIP LOCKED รองรับหลายพัน jobs/s</td></tr>
+<tr><td>Scheduler</td><td><strong>Per-user period offset</strong> (01 หัวข้อ 7) + jitter ของ <code>next_run_at</code> ทั่ว window + priority = เวลาที่เหลือใน window</td><td>✅ by design</td><td>ถ้าไม่ทำ: thundering herd ทุกสัปดาห์</td></tr>
+<tr><td>Signer</td><td>ECDSA ~1 ms/sig; 2 pods ≈ 1,000+ sig/s; เพิ่ม replica ได้แต่ไม่ต้อง</td><td>fixed 2 (ตั้งใจ)</td><td>ไม่ใช่</td></tr>
+<tr><td>PostgreSQL</td><td>แนวตั้ง (resize OCPU, ดาวน์ไทม์สั้น) → HA + read replica สำหรับ indexer/API (T2) → partition <code>decisions</code>/<code>market_snapshots</code>/<code>chain_events</code> รายเดือน + ย้ายเก่าไป WORM bucket</td><td>⚠️ manual resize (alarm: CPU &gt; 70%, connections &gt; 85%)</td><td>&gt; ~100k users หรือ storage โต; pgbouncer เมื่อ connections &gt; 200</td></tr>
+<tr><td>Solver tx throughput (<code>exec</code>)</td><td><code>settleBatch</code> 50–100 intents/tx (lever หลัก) + <strong>wallet sharding</strong>: N hot wallets แบ่งตาม <code>hash(user) % N</code> แต่ละตัวมี nonce lane ของตัวเอง (N ใน config, refill ต่อ wallet)</td><td>⚠️ N ตั้งใน config; alarm บน pending-tx age</td><td>กระเป๋าเดียว ≈ 1 tx/block (2 s) → ~40k tx/วัน; ด้วย batch ถึงได้ &gt; 1M users ก่อนต้อง shard</td></tr>
+<tr><td>RPC</td><td>compute units โตเชิงเส้น (simulation ต่อ intent + getLogs); free → growth tier → provider ที่ 2 แบ่ง load → own node (T4); indexer ใช้ getLogs ช่วงกว้าง + cache block headers</td><td>❌ ต้องอัปเกรด plan (alarm 80% CU)</td><td>~10–30k users บน free tier</td></tr>
+<tr><td>Gas float / refill</td><td>Safe Allowance cap เป็น <strong>สูตร</strong>: <code>cap/day = 2 × avg gas/day (7d) + buffer</code> อัปเดตโดย job รายวัน (แก้ allowance ต้องคนเซ็น → alarm 14 วันล่วงหน้า)</td><td>⚠️ semi (คนเซ็น allowance ใหม่)</td><td>volume โต &gt; 2× ภายในสัปดาห์</td></tr>
+<tr><td>DEX pools (Phase A: Uniswap v3 / Aerodrome บน Base)</td><td>Router quote ทั้งสอง; กระจาย settle ทั่ว period; alarm slippage รายวัน (order $50 บน pool ระดับ $10M+ ≈ 0 bps)</td><td>✅ router</td><td>ไม่ใช่คอขวดใน Phase A; Phase B (TSV) ต้องเพิ่ม venue-hours scheduler + volume cap metric</td></tr>
+<tr><td>Admission control</td><td>waitlist flag ปิดรับ delegation ใหม่ได้ทันที (ใช้เมื่อ TVL ใกล้ cap ที่ audit ครอบ หรือ Phase B venue onboarding)</td><td>✅ flag ใน config</td><td>TVL cap ก่อน audit; Phase B: venue throughput</td></tr>
+<tr><td>Notifications</td><td>Outbox rate-limited ต่อ channel (Bot API ~30 msg/s); กระจายส่งทั่ว period; รวมข้อความ (digest) เมื่อ backlog</td><td>✅ outbox</td><td>burst notify &gt; 100k ใน 1 ชม.</td></tr>
+<tr><td>LLM</td><td>ไม่มีฝั่ง server (BYO client-side); macro signal = deterministic indicators จาก free feeds</td><td>✅ n/a</td><td>—</td></tr>
+</table>
+
+<h3>Load shedding &amp; degradation order (เมื่อ backlog โต)</h3>
+<ol>
+  <li>ลดความถี่ macro indicators (15 → 60 นาที) — snapshot ยัง fresh ตาม <code>maxAge</code></li>
+  <li>เพิ่ม batch size และ interval ของ <code>settleBatch</code></li>
+  <li>เปิด waitlist (หยุด delegation ใหม่) — ผู้ใช้เดิมไม่กระทบ</li>
+  <li>ไม่มีขั้น "ข้ามการซื้อ" โดยอัตโนมัติ — ถ้าถึง window end จริงจึงเป็น SKIP(reason=CAPACITY) และ alarm Critical</li>
+</ol>
+
+<h3>พิสูจน์ด้วย load test ไม่ใช่ความเชื่อ</h3>
+<ul>
+  <li><code>loadtest.yml</code> (workflow_dispatch): ephemeral staging + Anvil ที่ seed 100k synthetic delegations → รัน 1 period จำลอง (time-warp) → วัด jobs/s, p95 decision→submit, settle success, DB CPU, RPC CU ต่อ user</li>
+  <li>ผลลัพธ์เก็บเป็น baseline ใน repo; regression &gt; 20% = block release</li>
+  <li>Capacity alarms (หัวข้อ 9) ผูกกับตัวเลขจาก baseline ไม่ใช่ตัวเลขคาดเดา; trigger T1/T2/T4 อ้างอิง baseline นี้</li>
+</ul>
+<div class="callout ok"><strong>สรุป:</strong> ส่วนที่เป็นของเรา (core/exec/signer/queue) auto-scale ได้ตั้งแต่ Lean และมี headroom ถึงหลักล้าน users ด้วย <code>settleBatch</code> + per-user offset; สิ่งที่จะ "ตาย" ก่อนคือ RPC plan, allowance cap และ issuer onboarding — ทั้งสามมี alarm + lever ในตารางข้างบน</div>
+
+<!-- 16 -->
+<h2 id="checklist">16. Production Readiness Checklist</h2>
+<ul>
+  <li>☐ Compartments/IAM/policies ผ่าน review; Security Zones enforce บน signer/security compartments</li>
+  <li>☐ ไม่มี public IP บน compute; ingress เดียว = Cloudflare Tunnel (Stage 0) / LB ที่รับเฉพาะ Cloudflare IPs (Lean); Bastion เท่านั้นสำหรับ admin</li>
+  <li>☐ Signer subnet ไม่มี default route; NSG จำกัด client 2 workload; freeze-by-default ทดสอบแล้ว</li>
+  <li>☐ ทุก data store ใช้ CMK จาก Vault; TLS required; private endpoints</li>
+  <li>☐ WORM audit bucket retention rule <em>locked</em>; Audit → WORM connector ทำงาน</li>
+  <li>☐ Alarms ตาม หัวข้อ 9 ครบ (as-code); Telegram ops channel + on-call free tier ผูกแล้ว; canary user ทำงาน</li>
+  <li>☐ <code>ops-dr.yml drill</code> และ <code>ops-restore-drill.yml</code> ผ่าน (RPO/RTO วัดจริง); bucket replication ยืนยันแล้ว</li>
+  <li>☐ CI: tests/fuzz/slither/evals/import-linter/scan/sign เขียว; pull-deploy verify cosign; prod = GitHub Environment required reviewer; Renovate เปิด</li>
+  <li>☐ Contracts: audits + contest เสร็จ; addresses verified; guardian/timelock multisig ทดสอบ pause/unpause</li>
+  <li>☐ Budgets + cost alerts ต่อ compartment; tagging (env, service, owner) บังคับด้วย tag defaults</li>
+  <li>☐ Runbooks RB-01..08 มี workflow file และรันผ่านอย่างน้อย 1 ครั้ง; Safe Allowance Module ตั้ง cap แล้ว</li>
+  <li>☐ Load test baseline (100k synthetic users) รันผ่านและเก็บใน repo; per-user period offset ทดสอบว่า window reset กระจาย</li>
+  <li>☐ Stage 0: vm-app nftables allowlist ทดสอบ deny; vm-signer ไม่มี route ออก internet (ทดสอบด้วย curl ล้มเหลว)</li>
+</ul>
+
+<footer>Solar Wind · OCI Cloud Architecture v3.0 · 2026-09-21 · เอกสารคู่กัน: <a href="01-system-architecture.html">System Architecture</a> · ตัวเลข shape/ราคาเป็นค่าตั้งต้นสำหรับ review ควรยืนยันกับ OCI docs/Cost Estimator ณ เวลาที่ deploy</footer>
+</div>
+</body>
+</html>
