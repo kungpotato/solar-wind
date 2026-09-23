@@ -7,6 +7,31 @@ payment on Arc — no facilitator, no signup, no API key.
 **Live:** https://arc-risk-score-worker.kittisak-py-68b.workers.dev
 (try `GET /health`, `GET /.well-known/x402.json`, or `GET /risk/{address}` — the last one returns `402 Payment Required` until paid)
 
+## Proof it works
+
+A real `$0.01` USDC payment, broadcast by the reference agent, verified by the
+live deployment above, on Arc mainnet — not a testnet, not a mock:
+
+- **Transaction:** [`0x76c16c2c2167816d77b6705c01e37a03827f93de7ee00cbf17c3f02a748364fc`](https://explorer.arc.io/tx/0x76c16c2c2167816d77b6705c01e37a03827f93de7ee00cbf17c3f02a748364fc) — anyone can open this and see the transfer independently, no need to take our word for it.
+- **From (agent):** `0x80771D0E7422d458a662a61bDDad97B48a97A8fd` · **To (provider):** `0xef01a95B2a0e5076Bf5A425644afeCfE498910d7` · **Amount:** `10000` (6-decimal USDC = `$0.01`)
+- **What the API returned right after**, computed live from that same address's real on-chain history — not a fixture:
+  ```json
+  {
+    "address": "0x80771D0E7422d458a662a61bDDad97B48a97A8fd",
+    "score": 70,
+    "level": "low",
+    "factors": {
+      "isContract": false,
+      "txCount": 6,
+      "walletAgeDays": 0,
+      "usdcTransferCount": 6,
+      "sanctionsHit": false,
+      "contractVerified": "unknown"
+    }
+  }
+  ```
+- Reproduce it yourself: `cd client && npm install && cp .env.example .env` (fill in a funded Arc wallet), then `npm start`.
+
 - [`worker/`](worker/) — the resource server (Hono on Cloudflare Workers). This is the product.
 - [`client/`](client/) — a reference "AI agent" script used only to prove the whole loop works end to end. Not part of the product.
 - [`docs/epic-agent-pay-per-call-gateway.md`](docs/epic-agent-pay-per-call-gateway.md) — epic, user stories, acceptance criteria.
