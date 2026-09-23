@@ -37,6 +37,7 @@ live deployment above, on Arc mainnet — not a testnet, not a mock:
 - [`docs/epic-agent-pay-per-call-gateway.md`](docs/epic-agent-pay-per-call-gateway.md) — epic, user stories, acceptance criteria.
 - [`docs/high-level-design-api-client.md`](docs/high-level-design-api-client.md) — API contract, client responsibilities, failure modes.
 - [`docs/risk-scoring-methodology.md`](docs/risk-scoring-methodology.md) — the five factors, their weights, and why each one is either RPC-verifiable or honestly `unknown`.
+- [`docs/submission-description.md`](docs/submission-description.md) — ready-to-paste short description for the Arc Microgrants submission form.
 - [`docs/architecture-flow.svg`](docs/architecture-flow.svg) — payment sequence (agent → 402 → broadcast → Arc → data).
 - [`docs/api-architecture.svg`](docs/api-architecture.svg) — component architecture (Hono routes, x402 middleware, risk engine).
 - [`docs/epic-story-sequence.svg`](docs/epic-story-sequence.svg) — the epic end to end, stories 1-6 in order (provider → agent → Arc mainnet → agent → reviewer).
