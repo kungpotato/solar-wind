@@ -5,7 +5,7 @@
   "description": "Reference agent: calls the Arc Risk Score API, pays for it via x402-arc client-broadcast, and prints the result. Demo/reference only — not the product.",
   "type": "module",
   "scripts": {
-    "demo": "tsx demo.ts"
+    "start": "tsx run-reference-agent.ts"
   },
   "dependencies": {
     "x402-arc": "^0.1.0",

@@ -8,7 +8,7 @@ How the Arc Risk Score resource server (`worker/`) and the reference agent
 | Component | What it is | Where |
 |---|---|---|
 | Resource server | Hono app on Cloudflare Workers. Owns pricing, payment verification, and the risk-scoring logic. This is the product. | `worker/src/index.ts`, `worker/src/risk.ts` |
-| Client | A reference "AI agent" script. Proves the loop works; not part of what's sold. | `client/demo.ts` |
+| Client | A reference "AI agent" script. Proves the loop works; not part of what's sold. | `client/run-reference-agent.ts` |
 | x402-arc | Library both sides import. Server side verifies payments with no facilitator; client side signs and broadcasts them. | `worker/node_modules/x402-arc`, same in `client/` |
 | Arc mainnet | Settlement layer both sides read from / write to directly via RPC. Not a component we run. | `https://rpc.mainnet.arc.io` |
 
@@ -29,7 +29,7 @@ resource without hard-coding it: price, network, scheme.
 ### `GET /risk/:address`
 The paid endpoint. Two states:
 
-**No `X-PAYMENT` header, or an invalid one** — the x402-arc middleware
+**No `PAYMENT-SIGNATURE` header, or an invalid one** — the x402-arc middleware
 short-circuits before the route handler ever runs:
 ```
 402 Payment Required
@@ -47,7 +47,7 @@ short-circuits before the route handler ever runs:
 }
 ```
 
-**Valid `X-PAYMENT` header** (a client-broadcast tx already confirmed on
+**Valid `PAYMENT-SIGNATURE` header** (a client-broadcast tx already confirmed on
 Arc) — middleware claims the authorization, then the route handler runs:
 ```
 200 OK
@@ -74,7 +74,7 @@ Arc) — middleware claims the authorization, then the route handler runs:
 
 ## Client responsibilities
 
-`client/demo.ts` is the whole client-side contract, in order:
+`client/run-reference-agent.ts` is the whole client-side contract, in order:
 
 1. `GET /risk/{address}` with no payment.
 2. Expect `402`. Parse it with `readPaymentRequired` (handles both a JSON
@@ -87,7 +87,7 @@ Arc) — middleware claims the authorization, then the route handler runs:
    the client only signs and the facilitator broadcasts; here the client
    IS the broadcaster, because Arc gas is USDC and there's no facilitator
    to hand the signed authorization to.
-5. Retry the identical `GET` with `X-PAYMENT: toPaymentHeader(payment, requirements)`.
+5. Retry the identical `GET` with `PAYMENT-SIGNATURE: toPaymentHeader(payment, requirements)` (sent alongside `X-PAYMENT` for compatibility — see the README's known limitations for why both are sent).
 6. Expect `200`. Anything else is a hard failure — the script throws
    rather than retrying or guessing, since a silent retry on a payment
    path risks a double spend.

@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { paymentMiddleware, x402ResourceServer } from '@x402/hono'
-import { ArcLocalFacilitator, ArcExactScheme, ARC_USDC } from 'x402-arc'
+import { ArcLocalFacilitator, ArcExactScheme, ArcRpc, ARC_USDC } from 'x402-arc'
 import { createPublicClient, http, type Hex } from 'viem'
 import { computeRiskScore } from './risk'
 
@@ -60,7 +60,13 @@ function paidRouteMiddleware(env: Env) {
   // Cloudflare recycling an isolate or routing to a different one. Fine for
   // this demo's single-shot proof; replace with a Durable Object or KV
   // before relying on replay protection at real traffic.
-  const facilitator = new ArcLocalFacilitator({ chain: 'mainnet', rpcUrl: env.ARC_RPC_URL })
+  // x402-arc's ArcRpc stores a bare reference to the global `fetch` and calls
+  // it as `this.doFetch(...)`. Cloudflare Workers' native fetch throws
+  // "Illegal invocation" when called detached like that (Node.js doesn't
+  // mind, which is why this only breaks once deployed). Passing our own
+  // arrow-wrapped fetchImpl keeps the call inside a context fetch accepts.
+  const rpc = new ArcRpc({ url: env.ARC_RPC_URL, fetchImpl: (...args) => fetch(...args) })
+  const facilitator = new ArcLocalFacilitator({ chain: 'mainnet', rpcUrl: env.ARC_RPC_URL, rpc })
   const server = new x402ResourceServer(facilitator).register(
     'eip155:5042',
     new ArcExactScheme({ chain: 'mainnet' })

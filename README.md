@@ -32,9 +32,16 @@ to end on Arc mainnet today for a plain EOA wallet — Circle's own Gateway
 facilitator requires pre-depositing funds into a separate `GatewayWalletBatched`
 contract, which is a different integration than plain x402.
 
+## Bugs found and fixed while getting a real payment to go through
+
+Both confirmed by instrumenting the deployed Worker and reproducing locally — not guessed:
+
+- **Header name mismatch.** `x402-arc/client`'s `toPaymentHeader()` targets `X-PAYMENT`, but the installed `@x402/core` (2.13.x, via `@x402/hono`) only reads the same base64(JSON) payload from `PAYMENT-SIGNATURE`. Under `X-PAYMENT` alone, `@x402/core` silently treated every paid request as unpaid and re-issued a fresh 402 — it never even called the facilitator. Fixed by sending both headers from `client/run-reference-agent.ts`.
+- **`ArcRpc` breaks under Cloudflare Workers' `fetch`.** `x402-arc`'s `ArcRpc` stores a bare reference to the global `fetch` and calls it as `this.doFetch(...)`. Workers' native `fetch` throws `"Illegal invocation"` when called detached like that; Node.js doesn't mind, which is why this only broke once deployed, not in local testing. Fixed by constructing our own `ArcRpc` with an arrow-wrapped `fetchImpl` in `worker/src/index.ts` and passing it into `ArcLocalFacilitator`.
+
 ## Known v1 limitations — stated on purpose, not hidden
 
-- **`x402-arc@0.1.0` is new and its API may move.** `worker/src/index.ts` and `client/demo.ts` type-check against the actual installed package (`ArcLocalFacilitator`, `ArcExactScheme`, `ARC_USDC`, `payOnArc`, `toPaymentHeader`, `readPaymentRequired`, `selectArcRequirements`) — re-run `npm run typecheck` after any `npm update` to catch a breaking release.
+- **`x402-arc@0.1.0` is new and its API may move.** `worker/src/index.ts` and `client/run-reference-agent.ts` type-check against the actual installed package (`ArcLocalFacilitator`, `ArcExactScheme`, `ARC_USDC`, `payOnArc`, `toPaymentHeader`, `readPaymentRequired`, `selectArcRequirements`) — re-run `npm run typecheck` after any `npm update` to catch a breaking release.
 - **Replay protection (`MemorySpentStore`) is in-memory, per Worker isolate.** Fine for this demo's single-shot proof; Cloudflare can route to or recycle a different isolate at any time, so a real deployment needs a Durable Object or KV-backed store instead. See the comment above `ArcLocalFacilitator` in `worker/src/index.ts`.
 - **Contract source verification is always reported `unknown`.** No confirmed Arc explorer verification API was found while building this — the field is honestly `unknown` rather than guessed.
 - **Recent-activity window is capped at ~200k blocks.** Works today because Arc mainnet is only days old (launched 2026-09-16), so the cap still covers "since genesis." Swap for an indexer before that stops being true.
@@ -48,5 +55,5 @@ cp .env.example .dev.vars               # fill in .dev.vars, then:
 npm run dev
 
 cd ../client && npm install && cp .env.example .env     # fill in .env, then:
-npm run demo
+npm start
 ```

@@ -43,8 +43,16 @@ async function main() {
   })
   console.log('settled · tx', payment.transaction)
 
+  // x402-arc's toPaymentHeader() targets the "X-PAYMENT" convention, but the installed
+  // @x402/core (2.13.x, via @x402/hono's x402HTTPResourceServer.extractPayment) only reads
+  // the same base64(JSON) payload from "PAYMENT-SIGNATURE" — the two packages disagree on the
+  // header name for an otherwise identical wire format. Confirmed by instrumenting
+  // ArcLocalFacilitator locally: verify()/settle() were never even called under "X-PAYMENT",
+  // meaning @x402/core silently treated the request as unpaid rather than rejecting it loudly.
+  // Send both so this keeps working if either package's convention becomes the shared one.
+  const encodedPayment = toPaymentHeader(payment, requirements)
   const paidTry = await fetch(url, {
-    headers: { 'X-PAYMENT': toPaymentHeader(payment, requirements) },
+    headers: { 'PAYMENT-SIGNATURE': encodedPayment, 'X-PAYMENT': encodedPayment },
   })
 
   if (!paidTry.ok) {
