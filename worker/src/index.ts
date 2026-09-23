@@ -3,6 +3,7 @@ import { paymentMiddleware, x402ResourceServer } from '@x402/hono'
 import { ArcLocalFacilitator, ArcExactScheme, ArcRpc, ARC_USDC } from 'x402-arc'
 import { createPublicClient, http, type Hex } from 'viem'
 import { computeRiskScore } from './risk'
+import { LANDING_HTML } from './landing'
 
 type Env = {
   SERVER_PAY_TO_ADDRESS: string
@@ -26,6 +27,8 @@ app.onError((err, c) => {
 })
 
 app.notFound((c) => c.json({ error: 'not_found' }, 404))
+
+app.get('/', (c) => c.html(LANDING_HTML))
 
 app.get('/health', (c) => c.json({ ok: true, ts: Date.now() }))
 
