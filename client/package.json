@@ -1,0 +1,20 @@
+{
+  "name": "arc-risk-score-demo-client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reference agent: calls the Arc Risk Score API, pays for it via x402-arc client-broadcast, and prints the result. Demo/reference only — not the product.",
+  "type": "module",
+  "scripts": {
+    "demo": "tsx demo.ts"
+  },
+  "dependencies": {
+    "x402-arc": "^0.1.0",
+    "viem": "^2.21.26",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.6.0"
+  }
+}

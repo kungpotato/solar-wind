@@ -1,0 +1,6 @@
+{
+  "_comment": "v1 starter list — empty on purpose. Populate from a public sanctioned-address dataset (e.g. OFAC SDN crypto addresses) before relying on this for anything beyond a demo. Addresses are lowercase, no checksum.",
+  "source": "unpopulated",
+  "updatedAt": null,
+  "addresses": []
+}

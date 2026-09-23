@@ -1,0 +1,54 @@
+<svg width="100%" viewBox="0 0 680 540" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Arc Risk Score API — component architecture</title>
+<desc>An AI agent calls a Cloudflare Worker, which contains three parts: Hono routes handling /risk/:address and /health, x402-arc middleware that verifies payment with no facilitator, and a risk engine that scores wallets from on-chain data. The worker in turn reads from and verifies transactions against Arc mainnet.</desc>
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#73726c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<style>
+  .box-purple { fill: #EEEDFE; stroke: #534AB7; }
+  .box-gray { fill: #F1EFE8; stroke: #5F5E5A; }
+  .box-teal { fill: #E1F5EE; stroke: #0F6E56; }
+  .box-amber { fill: #FAEEDA; stroke: #854F0B; }
+  .box-coral { fill: #FAECE7; stroke: #993C1D; }
+  .title-purple { fill: #3C3489; } .sub-purple { fill: #534AB7; }
+  .title-gray { fill: #444441; } .sub-gray { fill: #5F5E5A; }
+  .title-teal { fill: #085041; } .sub-teal { fill: #0F6E56; }
+  .title-amber { fill: #633806; } .sub-amber { fill: #854F0B; }
+  .title-coral { fill: #712B13; } .sub-coral { fill: #993C1D; }
+  text { font-family: sans-serif; }
+  .th { font-size: 14px; font-weight: 500; }
+  .ts { font-size: 12px; }
+  .arr { stroke: #73726c; stroke-width: 1.5; fill: none; }
+</style>
+
+<rect class="box-purple" x="180" y="40" width="320" height="56" rx="8" stroke-width="0.5"/>
+<text class="th title-purple" x="340" y="58" text-anchor="middle" dominant-baseline="central">AI agent</text>
+<text class="ts sub-purple" x="340" y="78" text-anchor="middle" dominant-baseline="central">Calls &amp; pays per request</text>
+
+<line x1="340" y1="96" x2="340" y2="136" class="arr" marker-end="url(#arrow)"/>
+
+<rect class="box-gray" x="60" y="136" width="560" height="260" rx="20" stroke-width="0.5"/>
+<text class="th title-gray" x="340" y="168" text-anchor="middle" dominant-baseline="central">Cloudflare Worker</text>
+<text class="ts sub-gray" x="340" y="186" text-anchor="middle" dominant-baseline="central">arc-risk-score-worker</text>
+
+<rect class="box-teal" x="80" y="210" width="160" height="150" rx="12" stroke-width="0.5"/>
+<text class="th title-teal" x="160" y="240" text-anchor="middle" dominant-baseline="central">Hono routes</text>
+<text class="ts sub-teal" x="160" y="258" text-anchor="middle" dominant-baseline="central">/risk/:address</text>
+
+<rect class="box-purple" x="260" y="210" width="160" height="150" rx="12" stroke-width="0.5"/>
+<text class="th title-purple" x="340" y="240" text-anchor="middle" dominant-baseline="central">x402 middleware</text>
+<text class="ts sub-purple" x="340" y="258" text-anchor="middle" dominant-baseline="central">no facilitator</text>
+
+<rect class="box-amber" x="440" y="210" width="160" height="150" rx="12" stroke-width="0.5"/>
+<text class="th title-amber" x="520" y="240" text-anchor="middle" dominant-baseline="central">Risk engine</text>
+<text class="ts sub-amber" x="520" y="258" text-anchor="middle" dominant-baseline="central">on-chain scoring</text>
+
+<line x1="340" y1="396" x2="340" y2="436" class="arr" marker-end="url(#arrow)"/>
+
+<rect class="box-coral" x="180" y="436" width="320" height="56" rx="8" stroke-width="0.5"/>
+<text class="th title-coral" x="340" y="454" text-anchor="middle" dominant-baseline="central">Arc mainnet</text>
+<text class="ts sub-coral" x="340" y="474" text-anchor="middle" dominant-baseline="central">RPC reads &amp; tx verification</text>
+</svg>

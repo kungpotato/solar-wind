@@ -1,0 +1,18 @@
+name = "arc-risk-score-worker"
+main = "src/index.ts"
+compatibility_date = "2026-05-01"
+# Required: x402-arc / @x402/extensions import Node built-ins (node:crypto, url).
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+# Ships on the free *.workers.dev subdomain by default. To put it on a custom
+# domain instead, add the zone in Cloudflare and uncomment:
+#
+# routes = [
+#   { pattern = "api.YOUR-DOMAIN.com/*", zone_name = "YOUR-DOMAIN.com" }
+# ]
+
+# Not secret — plain public RPC endpoint. SERVER_PAY_TO_ADDRESS is a secret
+# instead (set via `wrangler secret put`), since it's meaningful account info.
+[vars]
+ARC_RPC_URL = "https://rpc.mainnet.arc.io"

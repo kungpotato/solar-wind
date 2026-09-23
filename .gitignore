@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Secrets — never commit real values, only *.example
+.env
+.env.*
+!.env.example
+.dev.vars
+
+# Cloudflare Workers local state
+.wrangler/
+
+# OS / editor noise
+.DS_Store
+*.log
