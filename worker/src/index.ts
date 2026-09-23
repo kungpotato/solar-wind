@@ -50,11 +50,12 @@ function paidRouteMiddleware(env: Env) {
   // there's no third party to sponsor gas here, so its only job is checking
   // the client's already-broadcast tx against Arc RPC.
   //
-  // claimOn defaults to 'verify' (not 'settle') on purpose: @x402/core
-  // settles AFTER the handler runs, so claiming on settle lets a replayed
-  // payment execute the handler once for free before being rejected. Keep
-  // the default — see x402-arc's facilitator.ts for the measured bug this
-  // avoids.
+  // claimOn defaults to 'verify' — keep it. Confirmed by instrumenting this
+  // exact pipeline: for the 'upfront' payment flow (ours), @x402/core skips
+  // verify() entirely and calls settle() BEFORE the handler runs, gating the
+  // response on it. claimOn:'verify' still matters there — it's read inside
+  // settle() too (see x402-arc's facilitator.ts settle()), and is what makes
+  // a replayed payment fail there instead of slipping through as "new".
   //
   // MemorySpentStore (the default) is per-isolate and does not survive
   // Cloudflare recycling an isolate or routing to a different one. Fine for

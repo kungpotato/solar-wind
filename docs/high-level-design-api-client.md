@@ -100,7 +100,7 @@ including generic x402 agent frameworks that support the
 ## Non-functional notes
 
 - **Price is fixed and single-scheme**: `$0.01`, `exact`, `eip155:5042` only. No tiers, no negotiation.
-- **Idempotency**: a given signed authorization can only be claimed once (`ArcLocalFacilitator`, `claimOn: 'verify'`). Two identical requests in flight can race; the loser gets rejected, not double-charged.
+- **Idempotency**: a given signed authorization can only be claimed once (`ArcLocalFacilitator`, `claimOn: 'verify'`). For our payment flow (`upfront`), `@x402/core` skips `verify()` and calls `settle()` before the handler runs — confirmed by instrumenting the deployed pipeline — so the claim actually happens inside `settle()`, gated by the same `claimOn` setting. Two identical requests in flight can race; the loser gets rejected, not double-charged.
 - **Replay store is per-isolate memory** — see the limitation already tracked in [`../README.md`](../README.md#known-v1-limitations--stated-on-purpose-not-hidden). It does not survive Cloudflare recycling or routing to a different isolate.
 - **No auth, no API key, no session** — the payment itself is the only credential. Anyone who can pay can call.
 - **Timeouts**: bounded by `maxTimeoutSeconds` in the payment requirements and by however long `computeRiskScore`'s bounded RPC calls take (worst case: one binary search + two `getLogs` calls over the capped block window).
