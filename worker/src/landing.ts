@@ -56,8 +56,8 @@ export const LANDING_HTML = `<!doctype html>
   <h1>Risk-score any Arc wallet <span class="accent">before your agent pays it.</span></h1>
   <p class="lead">A pay-per-call API for autonomous agents. $0.01 USDC per lookup, settled by the caller broadcasting its own EIP-3009 payment on Arc &mdash; no facilitator, no signup, no API key.</p>
   <div style="display:flex;gap:12px;flex-wrap:wrap;">
-    <a class="btn btn-primary" href="/.well-known/x402.json">View x402 discovery doc</a>
-    <a class="btn btn-ghost" href="https://github.com/kungpotato/solar-wind" target="_blank" rel="noopener">Source on GitHub</a>
+    <a class="btn btn-primary" href="https://github.com/kungpotato/solar-wind" target="_blank" rel="noopener">Source on GitHub</a>
+    <a class="btn btn-ghost" href="/.well-known/x402.json" target="_blank" rel="noopener">x402 discovery doc (raw JSON)</a>
   </div>
 </div>
 
