@@ -38,7 +38,7 @@ export const LANDING_HTML = `<!doctype html>
   label { display: block; font-size: 12px; color: #8B909A; margin-bottom: 8px; }
   pre#result { margin: 0; padding: 16px; background: #0B0C0E; border-radius: 8px; font-size: 12px; line-height: 1.7; white-space: pre-wrap; word-break: break-all; min-height: 20px; }
   .err { color: #FF6B6B; }
-  .steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin: 0 0 72px; }
+  .steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin: 0 0 16px; }
   .step-n { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #C6FF4D; margin-bottom: 10px; }
   .step-t { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
   .step-d { font-size: 13px; color: #8B909A; line-height: 1.6; }
@@ -57,7 +57,6 @@ export const LANDING_HTML = `<!doctype html>
   <p class="lead">A pay-per-call API for autonomous agents. $0.01 USDC per lookup, settled by the caller broadcasting its own EIP-3009 payment on Arc &mdash; no facilitator, no signup, no API key.</p>
   <div style="display:flex;gap:12px;flex-wrap:wrap;">
     <a class="btn btn-primary" href="https://github.com/kungpotato/solar-wind" target="_blank" rel="noopener">Source on GitHub</a>
-    <a class="btn btn-ghost" href="/.well-known/x402.json" target="_blank" rel="noopener">x402 discovery doc (raw JSON)</a>
   </div>
 </div>
 
@@ -80,6 +79,7 @@ export const LANDING_HTML = `<!doctype html>
     <div><div class="step-n">03</div><div class="step-t">Agent pays on Arc</div><div class="step-d">Signs &amp; broadcasts its own EIP-3009 tx &mdash; no facilitator.</div></div>
     <div><div class="step-n">04</div><div class="step-t">Score comes back</div><div class="step-d">Computed live from real on-chain activity.</div></div>
   </div>
+  <p class="mono" style="font-size:12px;color:#5F5E5A;margin:0 0 72px;">Agents can skip reading this page &mdash; fetch <a href="/.well-known/x402.json" style="color:#5F5E5A;text-decoration:underline;">/.well-known/x402.json</a> to discover price and payment details automatically.</p>
 </div>
 
 <div class="wrap">
