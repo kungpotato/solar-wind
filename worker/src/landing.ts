@@ -19,9 +19,11 @@ export const LANDING_HTML = `<!doctype html>
   .wrap { width: 100%; max-width: 1160px; margin: 0 auto; padding: 0 24px; box-sizing: border-box; }
   .nav { display: flex; align-items: center; justify-content: space-between; padding: 28px 0 0; }
   .pill { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border: 1px solid #23262B; border-radius: 999px; }
-  .dot { width: 6px; height: 6px; border-radius: 50%; background: #C6FF4D; display: inline-block; animation: pulse 1.8s ease-in-out infinite; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: #5F5E5A; display: inline-block; }
+  .dot.live { background: #C6FF4D; animation: pulse 1.8s ease-in-out infinite; }
+  .dot.down { background: #FF6B6B; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
-  @media (prefers-reduced-motion: reduce) { .dot { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .dot.live { animation: none; } }
   h1 { font-size: clamp(32px, 4vw, 48px); line-height: 1.15; font-weight: 700; margin: 0 0 20px; max-width: 640px; }
   .accent { color: #C6FF4D; }
   p.lead { font-size: 17px; line-height: 1.7; color: #8B909A; max-width: 560px; margin: 0 0 28px; }
@@ -47,7 +49,7 @@ export const LANDING_HTML = `<!doctype html>
 <body>
 <div class="wrap nav">
   <div class="mono" style="font-size:15px;font-weight:500;">ARC<span class="accent">·</span>RISK</div>
-  <div class="pill"><span class="dot"></span><span class="mono" style="font-size:12px;color:#8B909A;">arc mainnet &middot; live</span></div>
+  <div class="pill"><span class="dot" id="status-dot"></span><span class="mono" id="status-text" style="font-size:12px;color:#8B909A;">checking arc mainnet&hellip;</span></div>
 </div>
 
 <div class="wrap" style="padding-top:56px;padding-bottom:40px;">
@@ -96,6 +98,23 @@ export const LANDING_HTML = `<!doctype html>
 
 <script>
 (function () {
+  var dot = document.getElementById('status-dot');
+  var statusText = document.getElementById('status-text');
+  fetch('/arc-status')
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      if (data.ok) {
+        dot.className = 'dot live';
+        statusText.textContent = 'arc mainnet · live · block ' + Number(data.blockNumber).toLocaleString();
+      } else {
+        throw new Error('not ok');
+      }
+    })
+    .catch(function () {
+      dot.className = 'dot down';
+      statusText.textContent = 'arc mainnet · unreachable';
+    });
+
   var btn = document.getElementById('go');
   var input = document.getElementById('addr');
   var out = document.getElementById('result');

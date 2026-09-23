@@ -32,6 +32,20 @@ app.get('/', (c) => c.html(LANDING_HTML))
 
 app.get('/health', (c) => c.json({ ok: true, ts: Date.now() }))
 
+// Genuinely queries Arc RPC (not a static badge) — the landing page's
+// "arc mainnet · live" pill calls this on load to prove the chain is
+// actually reachable right now, not just that this Worker is up.
+app.get('/arc-status', async (c) => {
+  const client = createPublicClient({ chain: ARC_CHAIN, transport: http(c.env.ARC_RPC_URL) })
+  try {
+    const blockNumber = await client.getBlockNumber()
+    return c.json({ ok: true, network: 'eip155:5042', blockNumber: blockNumber.toString() })
+  } catch (err) {
+    console.error('arc_status_failed', err)
+    return c.json({ ok: false, error: 'arc_rpc_unreachable' }, 502)
+  }
+})
+
 app.get('/.well-known/x402.json', (c) =>
   c.json({
     x402Version: 2,
