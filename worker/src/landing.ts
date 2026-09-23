@@ -44,20 +44,32 @@ export const LANDING_HTML = `<!doctype html>
   .step-d { font-size: 13px; color: #8B909A; line-height: 1.6; }
   footer { border-top: 1px solid #23262B; padding: 28px 0 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #8B909A; }
   @media (max-width: 640px) { .steps { grid-template-columns: 1fr 1fr; } }
+  .hero {
+    position: relative;
+    background:
+      linear-gradient(180deg, rgba(11,12,14,.35) 0%, rgba(11,12,14,.75) 60%, #0B0C0E 100%),
+      url('https://images.unsplash.com/photo-1644088379091-d574269d422f?auto=format&fit=crop&w=1600&q=70') center 30%/cover no-repeat;
+    padding-bottom: 64px;
+  }
+  .credit { position: absolute; right: 24px; bottom: 16px; font-size: 10px; color: rgba(139,144,154,.7); }
+  .credit a { color: rgba(139,144,154,.9); }
 </style>
 </head>
 <body>
-<div class="wrap nav">
-  <div class="mono" style="font-size:15px;font-weight:500;">ARC<span class="accent">·</span>RISK</div>
-  <div class="pill"><span class="dot" id="status-dot"></span><span class="mono" id="status-text" style="font-size:12px;color:#8B909A;">checking arc mainnet&hellip;</span></div>
-</div>
-
-<div class="wrap" style="padding-top:56px;padding-bottom:40px;">
-  <h1>Risk-score any Arc wallet <span class="accent">before your agent pays it.</span></h1>
-  <p class="lead">A pay-per-call API for autonomous agents. $0.01 USDC per lookup, settled by the caller broadcasting its own EIP-3009 payment on Arc &mdash; no facilitator, no signup, no API key.</p>
-  <div style="display:flex;gap:12px;flex-wrap:wrap;">
-    <a class="btn btn-primary" href="https://github.com/kungpotato/solar-wind" target="_blank" rel="noopener">Source on GitHub</a>
+<div class="hero">
+  <div class="wrap nav">
+    <div class="mono" style="font-size:15px;font-weight:500;">ARC<span class="accent">·</span>RISK</div>
+    <div class="pill"><span class="dot" id="status-dot"></span><span class="mono" id="status-text" style="font-size:12px;color:#8B909A;">checking arc mainnet&hellip;</span></div>
   </div>
+
+  <div class="wrap" style="padding-top:88px;">
+    <h1>Risk-score any Arc wallet <span class="accent">before your agent pays it.</span></h1>
+    <p class="lead">A pay-per-call API for autonomous agents. $0.01 USDC per lookup, settled by the caller broadcasting its own EIP-3009 payment on Arc &mdash; no facilitator, no signup, no API key.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <a class="btn btn-primary" href="https://github.com/kungpotato/solar-wind" target="_blank" rel="noopener">Source on GitHub</a>
+    </div>
+  </div>
+  <div class="credit">Photo by <a href="https://unsplash.com/@choys_" target="_blank" rel="noopener">Conny Schneider</a> on <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a></div>
 </div>
 
 <div class="wrap">
